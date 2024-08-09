@@ -9,7 +9,7 @@ terraform {
   }
   backend "s3" {
     bucket  = "modelbucket-state-bucket"
-    key     = "global/s3/terraform.tfstate"
+    key     = "global/s3/main/terraform.tfstate"
     region  = "us-east-1"
     encrypt = true
   }

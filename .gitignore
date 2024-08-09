@@ -4,3 +4,7 @@ uploads/
 requirements.txt
 test_model.joblib
 modelBucketPackage/modelbucket/__pycache__/
+terraform/lambda_deployment/.terraform
+terraform/prod/.terraform
+terraform/prod/.terraform.lock.hcl
+terraform/lambda_deployment/.terraform.lock.hcl

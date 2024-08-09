@@ -6,6 +6,8 @@ const router = express.Router()
 router.post("/", async (req, res) => {
     let id = req.body.id
 
+    console.log("hit")
+
     try {
         await fetch('https://api.github.com/repos/Adi-K527/ModelBucket/actions/workflows/deploymodel.yaml/dispatches', {
             method: 'POST',
@@ -16,7 +18,10 @@ router.post("/", async (req, res) => {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                ref: 'main'
+                ref: 'main',
+                inputs: {
+                    "filename": id
+                }
             })
         });
     }

@@ -16,9 +16,9 @@ class Client():
         id = uuid.uuid4()
 
         with open(model_path, "rb") as f:
-            s3_client.upload_fileobj(f, "mb-bucket-5125", "models/" + obj_name + "-" + str(id))
+            s3_client.upload_fileobj(f, "mb-bucket-5125", "models/" + str(id))
         with open(dependencies_path, "rb") as f:
-            s3_client.upload_fileobj(f, "mb-bucket-5125", "dependencies/" + obj_name + "-" + str(id))
+            s3_client.upload_fileobj(f, "mb-bucket-5125", "dependencies/" + str(id))
         
         requests.post("http://localhost:3000/api/deployment/", data={"id": id})
 
