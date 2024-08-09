@@ -19,8 +19,8 @@ def predict():
     
     try:
         model_name = os.getenv("MODEL_NAME")
-        bucket.download_file(model_name, model_name)
-        model = joblib.load('/tmp/' + model_name)
+        bucket.download_file("models/" + model_name, "model.joblib")
+        model = joblib.load('/tmp/model.joblib')
     except Exception as e:
         return {
             "statusCode": 400,
