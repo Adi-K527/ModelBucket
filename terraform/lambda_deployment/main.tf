@@ -68,7 +68,7 @@ resource "random_uuid" "lambda_id" {}
 
 resource "aws_lambda_function" "modelbucket_deployment_function" {
   image_uri      = "${var.account_id}.dkr.ecr.us-east-1.amazonaws.com/${var.mb_ecr_name}:${var.image_tag}"
-  function_name  = "${random_uuid.lambda_id.result}"
+  function_name  = "${var.file_name}"
   package_type   = "Image"
   role           = aws_iam_role.iam_for_lambda.arn
 
