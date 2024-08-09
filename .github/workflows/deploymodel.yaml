@@ -53,27 +53,35 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
       
-      - name: Create lambda deployment infra
-        id: lambda-deployment-infra
-        env: 
-          AWS_ACCESS_KEY_ID:     ${{ env.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
+      # - name: Create lambda deployment infra
+      #   id: lambda-deployment-infra
+      #   env: 
+          # AWS_ACCESS_KEY_ID:     ${{ env.AWS_ACCESS_KEY_ID }}
+          # AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          # FILENAME:              ${{ env.FILENAME }}
+          # ACCOUNT_ID:            ${{ secrets.ACCOUNT_ID }}
+          # ECR_REPOSITORY:        ${{ secrets.ECR_REPOSITORY }}
+          # MODEL_FILES_BUCKET:    ${{ secrets.MODEL_FILES_BUCKET }}
+          # IMAGE_TAG:             ${{ github.sha }}
+      #   run: |
+      #     cd terraform/lambda_deployment
+      #     terraform init
+      #     terraform apply -auto-approve -var access_key=$AWS_ACCESS_KEY_ID -var secret_access_key=$AWS_SECRET_ACCESS_KEY -var file_name=$FILENAME -var account_id=$ACCOUNT_ID -var mb_ecr_name=$ECR_REPOSITORY -var image_tag=$IMAGE_TAG -var bucket_name=$MODEL_FILES_BUCKET > /dev/null 2>&1
+
+      - name: Create lambda
+        id: deploy-lambda
+        env:
+          AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           FILENAME:              ${{ env.FILENAME }}
           ACCOUNT_ID:            ${{ secrets.ACCOUNT_ID }}
           ECR_REPOSITORY:        ${{ secrets.ECR_REPOSITORY }}
           MODEL_FILES_BUCKET:    ${{ secrets.MODEL_FILES_BUCKET }}
           IMAGE_TAG:             ${{ github.sha }}
         run: |
-          cd terraform/lambda_deployment
-          terraform init
-          terraform apply -auto-approve -var access_key=$AWS_ACCESS_KEY_ID -var secret_access_key=$AWS_SECRET_ACCESS_KEY -var file_name=$FILENAME -var account_id=$ACCOUNT_ID -var mb_ecr_name=$ECR_REPOSITORY -var image_tag=$IMAGE_TAG -var bucket_name=$MODEL_FILES_BUCKET > /dev/null 2>&1
-
-      # - name: Deploy to lambda
-      #   id: deploy-lambda
-      #   env:
-      #     IMAGE_TAG:       ${{ github.sha }} 
-      #     ECR_REPOSITORY:  ${{ env.ECR_REPOSITORY }} 
-      #     ACCOUNT_ID:      ${{ env.ACCOUNT_ID }} 
-      #     LAMBDA_FUNCTION: ${{ env.LAMBDA_FUNCTION }} 
-      #   run:
-      #     aws lambda update-function-code --function-name $LAMBDA_FUNCTION --image-uri $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG > /dev/null 2>&1
+          aws lambda create-function \
+            --function-name "${{ env.FILENAME }}" \
+            --package-type "Image" \
+            --code "ImageUri=${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}" \
+            --role "arn:aws:iam::${{ env.ACCOUNT_ID }}:role/mb-lambda-deployment-iam-role" \
+            --environment "Variables={MY_AWS_ACCESS_THING=${{ secrets.AWS_ACCESS_KEY_ID }},AWS_SECRET_ACCESS=${{ secrets.AWS_SECRET_ACCESS_KEY }},AWS_BUCKET=${{ secrets.MODEL_FILES_BUCKET }},MODEL_NAME=${{ env.FILENAME }}}" > /dev/null 2>&1
