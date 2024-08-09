@@ -35,6 +35,8 @@ resource "aws_s3_object" "dependencies_folder" {
     key = "dependencies/"
 }
 
-
+resource "aws_ecr_repository" "mb_ecr_repo" {
+  name = "model_bucket_ecr"
+}
 
 

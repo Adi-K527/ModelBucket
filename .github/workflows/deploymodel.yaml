@@ -2,14 +2,62 @@ name: "Deploy Model"
 
 on:
   workflow_dispatch:
+    inputs:
+      filename:
+        description: "name of model file"
+        required: true
+
+env:
+  AWS_REGION:            ${{ secrets.AWS_REGION }}
+  ECR_REPOSITORY:        ${{ secrets.ECR_REPOSITORY }}
+  ACCOUNT_ID:            ${{ secrets.ACCOUNT_ID }}
+  AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  MODEL_REQS_BUCKET:     ${{ secrets.MODEL_REQS_BUCKET }}
+  FILENAME:              ${{ inputs.filename }}
+
 
 jobs:
-  build:
+  deploy:
+    name: Deploy
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Print something
-      run: echo "everything is fine"
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@0e613a0980cbf65ed5b322eb7a1e075d28913a83
+        with:
+          aws-access-key-id:     ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@62f4f872db3836360b72999f4b87f1ff13310f3a
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG:    ${{ github.sha }}
+          AWS_REGION:   ${{ env.AWS_REGION }}
+          AWS_ACCESS_KEY_ID:     ${{ env.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          S3_BUCKET:  ${{ env.MODEL_REQS_BUCKET }}
+          S3_KEY_REQ: ${{ env.FILENAME }}
+        run: |
+          docker build --build-arg AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --build-arg AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY --build-arg AWS_DEFAULT_REGION=$AWS_REGION --build-arg S3_BUCKET=$S3_BUCKET --build-arg S3_KEY_REQ=$S3_KEY_REQ -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./modelAPITemplate
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      # - name: Deploy to lambda
+      #   id: deploy-lambda
+      #   env:
+      #     IMAGE_TAG:       ${{ github.sha }} 
+      #     ECR_REPOSITORY:  ${{ env.ECR_REPOSITORY }} 
+      #     ACCOUNT_ID:      ${{ env.ACCOUNT_ID }} 
+      #     LAMBDA_FUNCTION: ${{ env.LAMBDA_FUNCTION }} 
+      #   run:
+      #     aws lambda update-function-code --function-name $LAMBDA_FUNCTION --image-uri $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG > /dev/null 2>&1

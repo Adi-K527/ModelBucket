@@ -7,7 +7,7 @@ router.post("/", async (req, res) => {
     let id = req.body.id
 
     try {
-        const response = await fetch('https://api.github.com/repos/Adi-K527/ModelBucket/actions/workflows/deploymodel.yaml/dispatches', {
+        await fetch('https://api.github.com/repos/Adi-K527/ModelBucket/actions/workflows/deploymodel.yaml/dispatches', {
             method: 'POST',
             headers: {
                 'Accept': 'application/vnd.github+json',
@@ -16,12 +16,9 @@ router.post("/", async (req, res) => {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                ref: 'main',
+                ref: 'main'
             })
         });
-
-        const responseBody = await response.json();
-        console.log('Response:', responseBody);
     }
     catch (error) {
         console.error(error)

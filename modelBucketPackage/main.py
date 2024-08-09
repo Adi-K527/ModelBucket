@@ -1,7 +1,6 @@
 import modelbucket as mb
 
 
-
 client = mb.Client(
     name  = "test",
     token = "abc"

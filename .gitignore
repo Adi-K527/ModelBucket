@@ -3,3 +3,4 @@ uploads/
 *.env
 requirements.txt
 test_model.joblib
+modelBucketPackage/modelbucket/__pycache__/
