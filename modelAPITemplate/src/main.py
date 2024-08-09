@@ -17,9 +17,17 @@ def predict():
                             aws_access_key_id     = os.getenv('MY_AWS_ACCESS_THING'), 
                             aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS' )).Bucket(os.getenv('AWS_BUCKET'))
     
-    model_name = os.getenv("MODEL_NAME")
-    bucket.download_file(model_name, model_name)
-    model = joblib.load('/tmp/' + model_name)
+    try:
+        model_name = os.getenv("MODEL_NAME")
+        bucket.download_file(model_name, model_name)
+        model = joblib.load('/tmp/' + model_name)
+    except Exception as e:
+        return {
+            "statusCode": 400,
+            "error": str(type(e)),
+            "body": str(e)
+        }
+
     
     return {
         'statusCode': 200,
