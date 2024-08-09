@@ -84,4 +84,4 @@ jobs:
             --package-type "Image" \
             --code "ImageUri=${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}" \
             --role "arn:aws:iam::${{ env.ACCOUNT_ID }}:role/mb-lambda-deployment-iam-role" \
-            --environment "Variables={MY_AWS_ACCESS_THING=${{ secrets.AWS_ACCESS_KEY_ID }},AWS_SECRET_ACCESS=${{ secrets.AWS_SECRET_ACCESS_KEY }},AWS_BUCKET=${{ secrets.MODEL_FILES_BUCKET }},MODEL_NAME=${{ env.FILENAME }}}" > /dev/null 2>&1
+            --environment "Variables={MY_AWS_ACCESS_THING=${{ secrets.AWS_ACCESS_KEY_ID }},AWS_SECRET_ACCESS=${{ secrets.AWS_SECRET_ACCESS_KEY }},AWS_BUCKET=${{ env.MODEL_FILES_BUCKET }},MODEL_NAME=${{ env.FILENAME }}}" > /dev/null 2>&1
