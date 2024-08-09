@@ -1,0 +1,5 @@
+node_modules/
+uploads/
+*.env
+requirements.txt
+test_model.joblib

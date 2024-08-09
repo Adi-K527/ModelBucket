@@ -1,0 +1,15 @@
+name: "Deploy Model"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Print something
+      run: echo "everything is fine"
