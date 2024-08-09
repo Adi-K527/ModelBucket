@@ -31,7 +31,7 @@ def predict():
     
     return {
         'statusCode': 200,
-        'body': json.dumps({"model": model})
+        'body': "done"
     }
 
 handler = Mangum(app)
