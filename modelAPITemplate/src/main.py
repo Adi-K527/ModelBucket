@@ -19,7 +19,7 @@ def predict():
     
     try:
         model_name = os.getenv("MODEL_NAME")
-        bucket.download_file("models/" + model_name, "model.joblib")
+        bucket.download_file("models/" + model_name, "/tmp/model.joblib")
         model = joblib.load('/tmp/model.joblib')
     except Exception as e:
         return {
