@@ -26,8 +26,4 @@ def predict():
         'body': json.dumps({"model": model})
     }
 
-
-def lambda_handler(event, context):
-    return { 'statusCode': 200, 'body': "hi" }
-
 handler = Mangum(app)
