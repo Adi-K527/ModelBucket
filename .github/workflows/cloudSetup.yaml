@@ -37,5 +37,6 @@ jobs:
             ACCESS_KEY:        ${{ env.AWS_ACCESS_KEY_ID }}
             SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
           run: |
+            cd terraform/prod
             terraform init
             terraform apply -auto-approve -var access_key=$ACCESS_KEY -var secret_access_key=$SECRET_ACCESS_KEY > /dev/null 2>&1
