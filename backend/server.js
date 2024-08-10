@@ -26,6 +26,6 @@ app.use(cookieParser())
 app.use("/api/user", userRoutes)
 app.use("/api/deployment", deploymentRoutes)
 
-app.listen(3000, () => console.log("Listening on port 3000"))
+app.listen(8080, () => console.log("Listening on port 3000"))
 
 export { client, app }
