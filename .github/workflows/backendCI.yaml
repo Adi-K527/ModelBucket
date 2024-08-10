@@ -26,5 +26,6 @@ jobs:
         - name: Run tests
           env:
             DB_URI: ${{ secrets.DB_URI }}
+            JWT_SECRET: ${{ secrets.JWT_SECRET }}
           run: |
             npm test -- --detectOpenHandles --forceExit
