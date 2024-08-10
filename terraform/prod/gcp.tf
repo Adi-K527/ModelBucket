@@ -9,7 +9,7 @@ resource "google_artifact_registry_repository" "model_bucket_gcp_registry" {
 
 
 resource "google_cloud_run_service" "default" {
-  name     = "cloudrun-srv"
+  name     = "mb-cloudrun-srv"
   location = "us-central1"
 
   template {
