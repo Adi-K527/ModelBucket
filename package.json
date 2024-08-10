@@ -5,12 +5,15 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon backend/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Adi-K527/ModelBucket.git"
+  },
+  "jest": {
+    "transform": {}
   },
   "keywords": [],
   "author": "",
@@ -21,6 +24,9 @@
   "homepage": "https://github.com/Adi-K527/ModelBucket#readme",
   "dependencies": {
     "@octokit/rest": "^21.0.1",
+    "bcrypt": "^5.1.1",
+    "cookie-parser": "^1.4.6",
+    "cookieparser": "^0.1.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
@@ -29,6 +35,10 @@
     "node-fetch": "^3.3.2",
     "nodemon": "^3.1.4",
     "octokit": "^4.0.2",
-    "pg": "^8.12.0"
+    "pg": "^8.12.0",
+    "supertest": "^7.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
   }
 }
