@@ -4,10 +4,8 @@ import { secure } from "../middleware/auth.js"
 
 const router = express.Router()
 
-router.post("/create",    createProject)
-router.post("/register",  register)
-
-router.get("/profile",    secure,   getProfile)
+router.get("/",           secure,   getProjects)
+router.post("/create",    secure,   createProject)
 router.put("/profile",    secure,   updateProfile)
 
 export default router

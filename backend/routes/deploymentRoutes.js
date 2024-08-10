@@ -13,7 +13,7 @@ router.post("/", async (req, res) => {
             method: 'POST',
             headers: {
                 'Accept': 'application/vnd.github+json',
-                'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`,
+                'Authorization': `Bearer ${process.env.GH_TOKEN}`,
                 'X-GitHub-Api-Version': '2022-11-28',
                 'Content-Type': 'application/json'
             },
