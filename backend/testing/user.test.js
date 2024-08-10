@@ -1,7 +1,6 @@
 import request from "supertest";
 import { app } from "../server.js";
 
-
 describe('POST /api/user/register', () => {
     it('should create a new user', async () => {
       const newUser = {
