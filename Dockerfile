@@ -11,7 +11,7 @@ COPY package*.json ./
 RUN npm ci
 
 #copy all code from project to cloud run's working directory
-COPY backend/ .
+COPY . .
 
 # Default command to be run, defined in package.json start script
 CMD npm start
