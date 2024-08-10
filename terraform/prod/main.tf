@@ -6,6 +6,10 @@ terraform {
         source  = "hashicorp/aws"
         version = "~>4.0"
     }
+    google = {
+      source = "hashicorp/google"
+      version = "~>4.0"
+    }
   }
   backend "s3" {
     bucket  = "modelbucket-state-bucket"
@@ -21,22 +25,7 @@ provider "aws" {
   secret_key = var.secret_access_key
 }
 
-resource "aws_s3_bucket" "mb_bucket" {
-    bucket = "mb-bucket-5125"
+provider "google" {
+  project     = "modelbucket"
+  region      = "us-central1"
 }
-
-resource "aws_s3_object" "models_folder" {
-    bucket = aws_s3_bucket.mb_bucket.id
-    key = "models/"
-}
-
-resource "aws_s3_object" "dependencies_folder" {
-    bucket = aws_s3_bucket.mb_bucket.id
-    key = "dependencies/"
-}
-
-resource "aws_ecr_repository" "mb_ecr_repo" {
-  name = "model_bucket_ecr"
-}
-
-

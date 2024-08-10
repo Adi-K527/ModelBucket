@@ -1,0 +1,42 @@
+name: "Set up cloud resources"
+
+on:
+    push:
+      branches:
+        - main
+        - backend
+
+env:
+  GOOGLE_CREDENTIALS:    ${{ secrets.GOOGLE_CREDENTIALS }}
+  AWS_REGION:            ${{ secrets.AWS_REGION }}
+  ECR_REPOSITORY:        ${{ secrets.ECR_REPOSITORY }}
+  ACCOUNT_ID:            ${{ secrets.ACCOUNT_ID }}
+  AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  MODEL_REQS_BUCKET:     ${{ secrets.MODEL_REQS_BUCKET }}
+  MODEL_FILES_BUCKET:    ${{ secrets.MODEL_FILES_BUCKET }}
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+
+        - name: Google Auth
+          id: auth
+          uses: 'google-github-actions/auth@v1'
+          with:
+            credentials_json: '${{ env.GOOGLE_CREDENTIALS }}'
+        
+        - name: Create resources
+          id: create-resources
+          env:
+            ACCESS_KEY:        ${{ env.AWS_ACCESS_KEY_ID }}
+            SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          run: |
+            cd terraform/prod
+            terraform init
+            terraform apply -auto-approve -var access_key=$ACCESS_KEY -var secret_access_key=$SECRET_ACCESS_KEY > /dev/null 2>&1
