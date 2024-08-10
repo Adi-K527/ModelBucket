@@ -3,7 +3,7 @@ FROM node:16.8.0
 WORKDIR /app
 
 #exposes port to run app on cloud run
-ENV PORT 3000
+ENV PORT 8080
 
 # copy package.json and package-lock.json into working directory
 COPY package*.json ./ 
