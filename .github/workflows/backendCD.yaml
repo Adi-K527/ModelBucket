@@ -18,6 +18,9 @@ env:
   MODEL_FILES_BUCKET:    ${{ secrets.MODEL_FILES_BUCKET }}
   PROJECT_ID:            ${{ secrets.GCP_PROJECT_ID }}
   SERVICE:               ${{ secrets.GCP_CLOUDRUN_SERVICE }}
+  DB_URI:                ${{ secrets.DB_URI }}
+  GH_TOKEN:              ${{ secrets.GH_TOKEN }}
+  JWT_SECRET:            ${{ secrets.JWT_SECRET }}
 
 jobs:
   deploy:
@@ -49,7 +52,11 @@ jobs:
           push: true
           tags: gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:latest
           build-args: |
-            HTTP_PORT=8080
+            DB_URI=${{env.DB_URI}}
+            AWS_ACCESS_KEY=${{env.AWS_ACCESS_KEY_ID}}
+            AWS_SECRET_ACCESS_KEY=${{env.AWS_SECRET_ACCESS_KEY}}
+            GH_TOKEN=${{env.GH_TOKEN}}
+            JWT_SECRET=${{env.JWT_SECRET}}
 
       - name: Deploy to Cloud Run
         uses: google-github-actions/deploy-cloudrun@main
