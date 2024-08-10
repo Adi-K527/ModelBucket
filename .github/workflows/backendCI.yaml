@@ -24,5 +24,7 @@ jobs:
             npm i
 
         - name: Run tests
+          env:
+            DB_URI: ${{ secrets.DB_URI }}
           run: |
             npm test -- --detectOpenHandles --forceExit
