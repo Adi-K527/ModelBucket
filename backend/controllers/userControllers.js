@@ -25,8 +25,9 @@ const login = async (req, res) => {
             res.cookie("AUTH_TOKEN", token, {
                 maxAge: 900000,
                 httpOnly: true,
-                secure: false
-            })
+                secure: false,
+                sameSite: 'Lax'
+            });
     
             res.status(200).json({"message": "Authenticated"})
         }
@@ -59,8 +60,9 @@ const register = async (req, res) => {
         res.cookie("AUTH_TOKEN", token, {
             maxAge: 900000,
             httpOnly: true,
-            secure: false
-        })
+            secure: false,
+            sameSite: 'Lax'
+        });
 
         res.status(200).json({"message": response.rows})
     }
