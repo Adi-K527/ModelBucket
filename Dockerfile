@@ -21,13 +21,11 @@ ENV VITE_BACKEND_URI      ${VITE_BACKEND_URI}
 ENV FRONTEND_URI          ${FRONTEND_URI}
 ENV COMMAND               ${COMMAND}
 
-# copy package.json and package-lock.json into working directory
-COPY package*.json ./ 
-
-RUN npm ci
-
-#copy all code from project to cloud run's working directory
 COPY . .
 
-# Default command to be run, defined in package.json start script
+RUN npm ci
+RUN cd frontend
+RUN npm ci
+RUN cd ..
+
 CMD sh -c "npm run ${COMMAND}"
