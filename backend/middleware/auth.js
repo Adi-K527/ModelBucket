@@ -4,8 +4,8 @@ import { client } from "../server.js"
 const secure = async (req, res, next) => {
     try {
         console.log(req.headers)
-        if (req.headers.cookie.startsWith("AUTH_TOKEN")) {
-            const token = req.headers.cookie.split('=')[1]
+        if (req.headers.cookie.startsWith("Bearer")) {
+            const token = req.headers.cookie.split(' ')[1]
 
             const {id, username, email} = jwt.decode(token, process.env.JWT_SECRET)
 
