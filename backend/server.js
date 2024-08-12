@@ -10,6 +10,8 @@ import cookieParser from "cookie-parser"
 const app = express()
 dotenv.config()
 
+const port = process.env.PORT || 8080
+
 const client = new pg.Client({
     connectionString: process.env.DB_URI
 })
@@ -28,6 +30,6 @@ app.use("/api/user",       userRoutes)
 app.use("/api/project",    projectRoutes)
 app.use("/api/model",      modelRoutes)
 
-app.listen(8080, () => console.log("Listening on port 8080"))
+app.listen(port, () => console.log(`Listening on port ${port}`))
 
 export { client, app }

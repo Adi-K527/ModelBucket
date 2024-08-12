@@ -25,7 +25,10 @@ const Register = () => {
         }),
       });
 
+      const data = await res.json()
+
       if (res.ok) {
+        document.cookie = `AUTH_TOKEN=${data.AUTH_TOKEN}; path=/; SameSite=None; Secure`;
         navigate('/');
       } else {
         const errorData = await res.json();

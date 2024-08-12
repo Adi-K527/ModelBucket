@@ -23,8 +23,12 @@ const Login = () => {
               password,
             }),
           })
+
+        const data = await res.json()
+        
       
         if (res.status === 200) {
+          document.cookie = `AUTH_TOKEN=${data.AUTH_TOKEN}; path=/; SameSite=None; Secure`;
           navigate("/")
         }
     }
