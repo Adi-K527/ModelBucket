@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon backend/server.js",
+    "frontend": "cd frontend && npm run dev",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "type": "module",

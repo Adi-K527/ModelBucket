@@ -20,7 +20,7 @@ class Client():
         with open(dependencies_path, "rb") as f:
             s3_client.upload_fileobj(f, "mb-bucket-5125", "dependencies/" + str(id))
         
-        requests.post("http://localhost:3000/api/deployment/", data={"id": id})
+        requests.post("http://localhost:3000/api/model/deploy/", data={"id": id})
 
         
         
