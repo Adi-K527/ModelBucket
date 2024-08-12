@@ -24,8 +24,6 @@ ENV COMMAND               ${COMMAND}
 COPY . .
 
 RUN npm ci
-RUN cd frontend
-RUN npm ci
-RUN cd ..
+RUN cd frontend && npm ci
 
 CMD sh -c "npm run ${COMMAND}"
