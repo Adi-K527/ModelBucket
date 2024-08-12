@@ -28,7 +28,8 @@ const deployTier1 = async (model_id, id) => {
 
 const getModels = async (req, res) => {
     try {
-        const {id, username, email} = jwt.decode(req.cookies.AUTH_TOKEN, process.env.JWT_SECRET)
+        const token = req.headers.authorization.split(' ')[1]
+        const {id, username, email} = jwt.decode(token, process.env.JWT_SECRET)
         const {project_id} = req.body
     
         const response = await client.query(
@@ -56,7 +57,8 @@ const getModels = async (req, res) => {
 
 const createModel = async (req, res) => {
     try {
-        const {id, username, email} = jwt.decode(req.cookies.AUTH_TOKEN, process.env.JWT_SECRET)
+        const token = req.headers.authorization.split(' ')[1]
+        const {id, username, email} = jwt.decode(token, process.env.JWT_SECRET)
         const {project_id, modelname, deploymentType} = req.body
 
         const response = await client.query(
@@ -84,7 +86,8 @@ const createModel = async (req, res) => {
 
 const updateModelName = async (req, res) => {
     try {
-        const {id, username, email} = jwt.decode(req.cookies.AUTH_TOKEN, process.env.JWT_SECRET)
+        const token = req.headers.authorization.split(' ')[1]
+        const {id, username, email} = jwt.decode(token, process.env.JWT_SECRET)
         const {project_id, model_id, model_name} = req.body
 
         const response = await client.query(

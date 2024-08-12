@@ -6,6 +6,7 @@ const Dashboard = () => {
   const [createProject, setCreateProject] = useState(0);
   const [projectName,   setProjectName]   = useState("");
   const [projects, setProjects] = useState([]);
+  const [token, setToken] = useState("")
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,6 +19,8 @@ const Dashboard = () => {
             token = cookies[i].split("=")[1]
           }
         }
+
+        setToken(token)
 
         const res = await fetch(import.meta.env.VITE_BACKEND_URI + "/api/user/profile", {
           method: "GET",
@@ -68,6 +71,7 @@ const Dashboard = () => {
         credentials: "include",
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           "projectname": projectName,

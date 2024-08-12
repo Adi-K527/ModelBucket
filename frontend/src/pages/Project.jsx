@@ -10,6 +10,7 @@ const Project = () => {
   const [createModel, setCreateModel] = useState(0);
   const [modelName,   setModelName]   = useState("");
   const [modelTier,   setModelTier]   = useState("");
+  const [token, setToken] = useState("")
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -21,6 +22,8 @@ const Project = () => {
             token = cookies[i].split("=")[1]
           }
         }
+
+        setToken(token)
 
         const res = await fetch(`${import.meta.env.VITE_BACKEND_URI}/api/project/${id}`, {
           method: 'GET',
@@ -67,6 +70,7 @@ const Project = () => {
             credentials: "include",
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
                 "modelname": modelName,

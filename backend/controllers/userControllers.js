@@ -62,7 +62,8 @@ const register = async (req, res) => {
 
 const getProfile = async (req, res) => {
     try {
-        const {id, username, email} = jwt.decode(req.cookies.AUTH_TOKEN, process.env.JWT_SECRET)
+        const token = req.headers.authorization.split(' ')[1]
+        const {id, username, email} = jwt.decode(token, process.env.JWT_SECRET)
 
         const response = await client.query(
             "SELECT * FROM project JOIN users_project ON project.id = users_project.project_id JOIN users ON users_project.user_id = users.id WHERE users.id = $1", 
@@ -79,7 +80,8 @@ const getProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
     try {
-        const {id, username, email} = jwt.decode(req.cookies.AUTH_TOKEN, process.env.JWT_SECRET)
+        const auth_token = req.headers.authorization.split(' ')[1]
+        const {id, username, email} = jwt.decode(auth_token, process.env.JWT_SECRET)
 
         const attributes = Object.keys(req.body)
         const values = []

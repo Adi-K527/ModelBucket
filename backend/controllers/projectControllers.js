@@ -3,7 +3,8 @@ import jwt from "jsonwebtoken"
 
 const getProjects = async (req, res) => {
     try {
-        const {id, username, email} = jwt.decode(req.cookies.AUTH_TOKEN, process.env.JWT_SECRET)
+        const token = req.headers.authorization.split(' ')[1]
+        const {id, username, email} = jwt.decode(token, process.env.JWT_SECRET)
 
         const response = await client.query(
             `SELECT * FROM users_project 
@@ -24,7 +25,8 @@ const getProjects = async (req, res) => {
 
 const getProject = async (req, res) => {
     try {
-        const {id, username, email} = jwt.decode(req.cookies.AUTH_TOKEN, process.env.JWT_SECRET)
+        const token = req.headers.authorization.split(' ')[1]
+        const {id, username, email} = jwt.decode(token, process.env.JWT_SECRET)
         const {project_id} = req.params
 
         const response = await client.query(
@@ -72,7 +74,8 @@ const getProject = async (req, res) => {
 
 const createProject = async (req, res) => {
     try {
-        const {id, username, email} = jwt.decode(req.cookies.AUTH_TOKEN, process.env.JWT_SECRET)
+        const token = req.headers.authorization.split(' ')[1]
+        const {id, username, email} = jwt.decode(token, process.env.JWT_SECRET)
         const {projectname} = req.body
     
         const projectRes = await client.query(
@@ -96,7 +99,8 @@ const createProject = async (req, res) => {
 
 const updateProjectName = async (req, res) => {
     try {
-        const {id, username, email} = jwt.decode(req.cookies.AUTH_TOKEN, process.env.JWT_SECRET)
+        const token = req.headers.authorization.split(' ')[1]
+        const {id, username, email} = jwt.decode(token, process.env.JWT_SECRET)
         const {project_id, project_name} = req.body
     
         const projectAvailable = await client.query(
@@ -125,7 +129,8 @@ const updateProjectName = async (req, res) => {
 
 const addUserPending = async (req, res) => {
     try {
-        const {id, username, email} = jwt.decode(req.cookies.AUTH_TOKEN, process.env.JWT_SECRET)
+        const token = req.headers.authorization.split(' ')[1]
+        const {id, username, email} = jwt.decode(token, process.env.JWT_SECRET)
         const {project_id} = req.body
 
         await client.query(
@@ -144,7 +149,8 @@ const addUserPending = async (req, res) => {
 
 const addUserMember = async (req, res) => {
     try {
-        const {id, username, email} = jwt.decode(req.cookies.AUTH_TOKEN, process.env.JWT_SECRET)
+        const token = req.headers.authorization.split(' ')[1]
+        const {id, username, email} = jwt.decode(token, process.env.JWT_SECRET)
         const {project_id, user_id} = req.body
         
         const projectPresent = await client.query(
