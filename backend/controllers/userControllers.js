@@ -25,7 +25,7 @@ const login = async (req, res) => {
             res.cookie("AUTH_TOKEN", token, {
                 maxAge: 9000000,
                 httpOnly: false,
-                secure: false,
+                secure: true,
                 sameSite: 'None'
             });
     
@@ -60,7 +60,7 @@ const register = async (req, res) => {
         res.cookie("AUTH_TOKEN", token, {
             maxAge: 9000000,
             httpOnly: false,
-            secure: false,
+            secure: true,
             sameSite: 'None'
         });
 
@@ -128,7 +128,7 @@ const updateProfile = async (req, res) => {
         res.cookie("AUTH_TOKEN", token, {
             maxAge: 9000000,
             httpOnly: false,
-            secure: false,
+            secure: true,
             sameSite: 'None'
         })
     
