@@ -3,6 +3,7 @@ import { client } from "../server.js"
 
 const secure = async (req, res, next) => {
     try {
+        console.log(req.headers)
         if (req.headers.cookie.startsWith("AUTH_TOKEN")) {
             const token = req.headers.cookie.split('=')[1]
 
@@ -26,7 +27,7 @@ const secure = async (req, res, next) => {
     }
     catch (error) {
         console.error(error)
-        res.status(400).json({"error": error})
+        res.status(400).json({"error": "server error"})
     }
 }
 
