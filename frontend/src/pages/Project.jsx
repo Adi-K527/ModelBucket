@@ -14,11 +14,20 @@ const Project = () => {
   useEffect(() => {
     const fetchProject = async () => {
       try {
+        const cookies = document.cookie.split(";")
+        let token = ""
+        for (let i = 0; i < cookies.length; i++) {
+          if (cookies[i].startsWith("AUTH_TOKEN")) {
+            token = cookies[i].split("=")[1]
+          }
+        }
+
         const res = await fetch(`${import.meta.env.VITE_BACKEND_URI}/api/project/${id}`, {
           method: 'GET',
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
           },
         });
 
