@@ -30,4 +30,4 @@ RUN npm ci
 COPY . .
 
 # Default command to be run, defined in package.json start script
-CMD ["npm", "run", "${COMMAND}"]
+CMD ["npm", "run", "$COMMAND"]
