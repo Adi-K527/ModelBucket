@@ -57,7 +57,7 @@ const getModels = async (req, res) => {
 const createModel = async (req, res) => {
     try {
         const {id, username, email} = jwt.decode(req.cookies.AUTH_TOKEN, process.env.JWT_SECRET)
-        const {project_id, model_name, deploymentType} = req.body
+        const {project_id, modelname, deploymentType} = req.body
 
         const response = await client.query(
             "SELECT user_id FROM users_project WHERE user_id = $1 AND project_id = $2",
@@ -67,7 +67,7 @@ const createModel = async (req, res) => {
         if (response.rows.length > 0) {
             await client.query(
                 "INSERT INTO model (modelname, project_id, deploymenttype) VALUES ($1, $2, $3)",
-                [model_name, project_id, deploymentType]
+                [modelname, project_id, deploymentType]
             )
 
             res.status(200).json({"message": "model created"})

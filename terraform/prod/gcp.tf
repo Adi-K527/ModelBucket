@@ -8,8 +8,26 @@ resource "google_artifact_registry_repository" "model_bucket_gcp_registry" {
 }
 
 
-resource "google_cloud_run_service" "default" {
-  name     = "mb-cloudrun-srv"
+resource "google_cloud_run_service" "cr_backend" {
+  name     = "mb-cloudrun-backend-6816"
+  location = "us-central1"
+
+  template {
+    spec {
+      containers {
+        image = "gcr.io/google-samples/hello-app:1.0"
+      }
+    }
+  }
+
+  traffic {
+    percent         = 100
+    latest_revision = true
+  }
+}
+
+resource "google_cloud_run_service" "cr_frontend" {
+  name     = "mb-cloudrun-frontend-8326"
   location = "us-central1"
 
   template {
@@ -35,10 +53,18 @@ data "google_iam_policy" "noauth" {
   }
 }
 
-resource "google_cloud_run_service_iam_policy" "noauth" {
-  location    = google_cloud_run_service.default.location
-  project     = google_cloud_run_service.default.project
-  service     = google_cloud_run_service.default.name
+resource "google_cloud_run_service_iam_policy" "noauth_backend" {
+  location    = google_cloud_run_service.cr_backend.location
+  project     = google_cloud_run_service.cr_backend.project
+  service     = google_cloud_run_service.cr_backend.name
+
+  policy_data = data.google_iam_policy.noauth.policy_data
+}
+
+resource "google_cloud_run_service_iam_policy" "noauth_frontend" {
+  location    = google_cloud_run_service.cr_frontend.location
+  project     = google_cloud_run_service.cr_frontend.project
+  service     = google_cloud_run_service.cr_frontend.name
 
   policy_data = data.google_iam_policy.noauth.policy_data
 }

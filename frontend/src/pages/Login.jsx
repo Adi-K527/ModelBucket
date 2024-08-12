@@ -1,9 +1,12 @@
 import React from 'react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 
 const Login = () => {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
+  const navigate = useNavigate();
 
   const onSubmit = async (e) => {
     e.preventDefault()
@@ -14,15 +17,16 @@ const Login = () => {
             headers: {
               'Content-Type': 'application/json',
             },
+            credentials: "include",
             body: JSON.stringify({
               username,
               password,
             }),
           })
       
-          console.log(res)
-          const data = await res.json()
-          console.log(data)
+        if (res.status === 200) {
+          navigate("/")
+        }
     }
     catch (error) {
         console.error(error)
@@ -40,13 +44,9 @@ const Login = () => {
         <div>
           <input type="password" placeholder="Enter your password" value={password} onChange={(e) => (setPassword(e.target.value))} required/>
         </div>
-        <div>
-          <input type="checkbox" id="rememberMe" />
-          <label htmlFor="rememberMe">Remember me</label>
-        </div>
         <button type="submit">Login</button>
       </form>
-      <p>Don't have an account? <a href="#">Sign up</a></p>
+      <p>Don't have an account? <a href="/register">Sign up</a></p>
     </div>
   );
 };

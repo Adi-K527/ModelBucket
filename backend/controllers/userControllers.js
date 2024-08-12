@@ -23,10 +23,10 @@ const login = async (req, res) => {
         if (response.rows.length > 0 && await bcrypt.compare(password, response.rows[0].password)) {
             const token = await getToken(response.rows[0].id, response.rows[0].username, response.rows[0].email)
             res.cookie("AUTH_TOKEN", token, {
-                maxAge: 900000,
-                httpOnly: true,
+                maxAge: 9000000,
+                httpOnly: false,
                 secure: false,
-                sameSite: 'Lax'
+                sameSite: 'strict'
             });
     
             res.status(200).json({"message": "Authenticated"})
@@ -58,10 +58,10 @@ const register = async (req, res) => {
 
         const token = await getToken(response.rows[0].id, username, email)
         res.cookie("AUTH_TOKEN", token, {
-            maxAge: 900000,
-            httpOnly: true,
+            maxAge: 9000000,
+            httpOnly: false,
             secure: false,
-            sameSite: 'Lax'
+            sameSite: 'strict'
         });
 
         res.status(200).json({"message": response.rows})
@@ -126,9 +126,10 @@ const updateProfile = async (req, res) => {
         const token = await getToken(response.rows[0].id, response.rows[0].username, response.rows[0].email)
 
         res.cookie("AUTH_TOKEN", token, {
-            maxAge: 900000,
-            httpOnly: true,
-            secure: false
+            maxAge: 9000000,
+            httpOnly: false,
+            secure: false,
+            sameSite: 'strict'
         })
     
         res.status(200).json({"data": data.rows})

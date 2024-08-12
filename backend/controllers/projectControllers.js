@@ -22,14 +22,62 @@ const getProjects = async (req, res) => {
 }
 
 
+const getProject = async (req, res) => {
+    try {
+        const {id, username, email} = jwt.decode(req.cookies.AUTH_TOKEN, process.env.JWT_SECRET)
+        const {project_id} = req.params
+
+        const response = await client.query(
+            `SELECT * FROM users_project 
+             INNER JOIN project ON users_project.project_id = project.id 
+             WHERE users_project.user_id = $1 
+             AND (users_project.status = 'MEMBER' OR users_project.status = 'OWNER')
+             AND users_project.project_id = $2`, 
+            [id, project_id]
+        )
+
+        if (response.rows.length > 0) {
+            const projectRes = await client.query(
+                `SELECT * FROM project
+                 LEFT JOIN model ON model.project_id = project.id
+                 WHERE project.id = $1`,
+                [project_id]
+            )
+
+            const modelRes = await client.query(
+                `SELECT * FROM model
+                 WHERE model.project_id = $1`,
+                [project_id]
+            )
+
+            const userRes = await client.query(
+                `SELECT * FROM users_project
+                 INNER JOIN users ON users_project.user_id = users.id
+                 WHERE users_project.project_id = $1`,
+                [project_id]
+            )
+
+            res.status(200).json({"projectData": projectRes.rows, "modelData": modelRes.rows, "userData": userRes.rows})
+        }
+        else {
+            res.status(400).json({"error": "Project not found"})
+        }
+    }
+    catch (error) {
+        console.error(error)
+        res.status(400).json({"error": error})
+    }
+}
+
+
 const createProject = async (req, res) => {
     try {
         const {id, username, email} = jwt.decode(req.cookies.AUTH_TOKEN, process.env.JWT_SECRET)
-        const {project_name} = req.body
+        const {projectname} = req.body
     
         const projectRes = await client.query(
             "INSERT INTO project (projectname, user_id) VALUES ($1, $2) RETURNING id",
-            [project_name, id]
+            [projectname, id]
         )
     
         const projectId = projectRes.rows[0].id
@@ -123,4 +171,4 @@ const addUserMember = async (req, res) => {
 }
 
 
-export { getProjects, createProject, updateProjectName, addUserPending, addUserMember }
+export { getProjects, createProject, updateProjectName, addUserPending, addUserMember, getProject }
