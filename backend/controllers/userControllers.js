@@ -26,7 +26,6 @@ const login = async (req, res) => {
                 maxAge: 9000000,
                 httpOnly: false,
                 secure: false,
-                sameSite: 'strict'
             });
     
             res.status(200).json({"message": "Authenticated"})
@@ -61,7 +60,6 @@ const register = async (req, res) => {
             maxAge: 9000000,
             httpOnly: false,
             secure: false,
-            sameSite: 'strict'
         });
 
         res.status(200).json({"message": response.rows})
@@ -129,7 +127,6 @@ const updateProfile = async (req, res) => {
             maxAge: 9000000,
             httpOnly: false,
             secure: false,
-            sameSite: 'strict'
         })
     
         res.status(200).json({"data": data.rows})
