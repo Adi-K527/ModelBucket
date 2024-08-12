@@ -4,7 +4,7 @@ import bcrypt from "bcrypt"
 
 
 const getToken = async (id, username, email) => {
-    return jwt.sign({id, username, email}, process.env.JWT_SECRET)
+    return jwt.sign({id, username, email}, process.env.JWT_SECRET, { expiresIn: '10h' })
 }
 
 const login = async (req, res) => {
@@ -22,14 +22,8 @@ const login = async (req, res) => {
 
         if (response.rows.length > 0 && await bcrypt.compare(password, response.rows[0].password)) {
             const token = await getToken(response.rows[0].id, response.rows[0].username, response.rows[0].email)
-            res.cookie("AUTH_TOKEN", token, {
-                maxAge: 9000000,
-                httpOnly: true,
-                secure: true,
-                sameSite: 'None'
-            });
     
-            res.status(200).json({"message": "Authenticated"})
+            res.status(200).json({"message": "Authenticated", "AUTH_TOKEN": token})
         }
         else {
             res.status(400).json({"error": "Invalid Credentials"})
@@ -57,14 +51,8 @@ const register = async (req, res) => {
         )
 
         const token = await getToken(response.rows[0].id, username, email)
-        res.cookie("AUTH_TOKEN", token, {
-            maxAge: 9000000,
-            httpOnly: true,
-            secure: true,
-            sameSite: 'None'
-        });
 
-        res.status(200).json({"message": response.rows})
+        res.status(200).json({"message": response.rows, "AUTH_TOKEN": token})
     }
     catch (error) {
         console.error(error)
@@ -124,15 +112,8 @@ const updateProfile = async (req, res) => {
         )
 
         const token = await getToken(response.rows[0].id, response.rows[0].username, response.rows[0].email)
-
-        res.cookie("AUTH_TOKEN", token, {
-            maxAge: 9000000,
-            httpOnly: true,
-            secure: true,
-            sameSite: 'None'
-        })
     
-        res.status(200).json({"data": data.rows})
+        res.status(200).json({"data": data.rows, "AUTH_TOKEN": token})
     }
     catch (error) {
         console.error(error)
