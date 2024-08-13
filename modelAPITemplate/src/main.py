@@ -4,15 +4,21 @@ import joblib
 import os
 from mangum import Mangum
 from fastapi import FastAPI
+from pydantic import BaseModel
+from typing import Any
 
 app = FastAPI()
+
+class BatchData(BaseModel):
+    data: Any
+    
 
 @app.get("/")
 def status():
     return {"status": "ok"}
 
 @app.post("/predict")
-def predict():
+def predict(request: BatchData):
     print("----------------------------REQUEST STARTED----------------------------")
     bucket = boto3.resource('s3', 
                             aws_access_key_id     = os.getenv('MY_AWS_ACCESS_THING'), 
@@ -32,6 +38,10 @@ def predict():
         model = joblib.load('/tmp/model.joblib')
 
         print("----------------------------LOADED MODEL----------------------------")
+
+        prediction = model.predict([request.data])
+
+        print("----------------------------MADE PREDICTION----------------------------")
     except Exception as e:
         print("----------------------------ERROR----------------------------")
         return {
@@ -43,7 +53,7 @@ def predict():
     print("----------------------------DONE----------------------------")
     return {
         'statusCode': 200,
-        'body': "done"
+        'body': prediction
     }
 
 handler = Mangum(app)
