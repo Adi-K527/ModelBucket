@@ -6,6 +6,7 @@ from mangum import Mangum
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import Any
+import numpy as np
 
 app = FastAPI()
 
@@ -17,8 +18,14 @@ class BatchData(BaseModel):
 def status():
     return {"status": "ok"}
 
+
 @app.post("/predict")
 def predict(request: BatchData):
+
+    def np_encoder(object):
+        if isinstance(object, np.generic):
+            return object.item()
+        
     print("----------------------------REQUEST STARTED----------------------------")
     bucket = boto3.resource('s3', 
                             aws_access_key_id     = os.getenv('MY_AWS_ACCESS_THING'), 
@@ -53,7 +60,7 @@ def predict(request: BatchData):
     print("----------------------------DONE----------------------------")
     return {
         'statusCode': 200,
-        'body': prediction
+        'body': json.dumps({"prediction": prediction}, default=np_encoder)
     }
 
 handler = Mangum(app)
