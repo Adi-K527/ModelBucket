@@ -28,7 +28,7 @@ class Client():
             return
 
         with open(model_path, "rb") as f:
-            s3_client.upload_fileobj(f, "mb-bucket-5125", "models/" + str(id))
+            s3_client.upload_fileobj(f, "mb-bucket-5125", "models/" + str(id) + ".joblib")
         with open(dependencies_path, "rb") as f:
             s3_client.upload_fileobj(f, "mb-bucket-5125", "dependencies/" + str(id))
         

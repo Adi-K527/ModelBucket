@@ -96,7 +96,7 @@ const Project = () => {
           <h3>{model.modelname}</h3>
           <p><strong>Deployment Type:</strong> {model.deploymenttype}</p>
           <p><strong>Status:</strong> {model.state}</p>
-          {model.state !== "INACTIVE" && <p><strong>URL:</strong> <a href={model.model_url} target="_blank" rel="noopener noreferrer">{model.model_url}</a></p>}
+          {model.state === "ACTIVE" && <p><strong>URL:</strong> <a href={model.model_url} target="_blank" rel="noopener noreferrer">{model.model_url}</a></p>}
         </div>
       ))}
       </ul>

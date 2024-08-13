@@ -25,7 +25,7 @@ def predict():
 
         print("----------------------------GOT MODEL----------------------------")
 
-        bucket.download_file("models/" + model_name, "/tmp/model.joblib")
+        bucket.download_file("models/" + model_name + ".joblib", "tmp/model.joblib")
 
         print("----------------------------DOWNLOADED MODEL----------------------------")
 
