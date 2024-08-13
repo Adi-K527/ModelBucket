@@ -91,13 +91,14 @@ const Project = () => {
       <br/><br/>
       <h2>Models:</h2>
       <ul>
-        {models.map((model) => (
-            <div>
-                <li>
-                    <p>{model.modelname} | {model.deploymenttype}</p>
-                </li>
-            </div>
-        ))}
+      {models.map((model, index) => (
+        <div key={index} style={{ marginBottom: '20px', padding: '10px', border: '1px solid #ddd', borderRadius: '5px' }}>
+          <h3>{model.modelname}</h3>
+          <p><strong>Deployment Type:</strong> {model.deploymenttype}</p>
+          <p><strong>Status:</strong> {model.state}</p>
+          {model.state !== "INACTIVE" && <p><strong>URL:</strong> <a href={model.model_url} target="_blank" rel="noopener noreferrer">{model.model_url}</a></p>}
+        </div>
+      ))}
       </ul>
       <br/><br/><br/>
       <button onClick={() => setCreateModel(1)}>Create new model</button>

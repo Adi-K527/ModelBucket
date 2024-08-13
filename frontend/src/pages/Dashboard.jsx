@@ -87,6 +87,25 @@ const Dashboard = () => {
     navigate(`/project/${projectId}`);
   };
 
+  const handleGenerateKey = async (e) => {
+    e.preventDefault()
+
+    try {
+      const res = await fetch(import.meta.env.VITE_BACKEND_URI + "/api/user/createKey", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({}),
+      });
+    }
+    catch (error) {
+      console.error(error);
+    }
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -135,6 +154,7 @@ const Dashboard = () => {
           </form>
         </div>
       )}
+      <button onClick={handleGenerateKey}>Generate Key</button>
     </div>
   );
 };

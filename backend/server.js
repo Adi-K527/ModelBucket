@@ -6,6 +6,7 @@ import userRoutes from "./routes/userRoutes.js"
 import projectRoutes from "./routes/projectRoutes.js"
 import modelRoutes from "./routes/modelRoutes.js"
 import cookieParser from "cookie-parser"
+import timeout from "connect-timeout"
 
 const app = express()
 dotenv.config()
@@ -18,6 +19,7 @@ const client = new pg.Client({
 
 await client.connect()
 
+app.use(timeout('1h'))
 app.use(express.json())
 app.use(cors({
     origin: process.env.FRONTEND_URI,

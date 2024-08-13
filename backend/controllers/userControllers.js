@@ -1,10 +1,15 @@
 import { client } from "../server.js"
 import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
+import crypto from "crypto"
 
 
 const getToken = async (id, username, email) => {
     return jwt.sign({id, username, email}, process.env.JWT_SECRET, { expiresIn: '10h' })
+}
+
+const getSecretToken = () => {
+    return crypto.randomBytes(32).toString('hex');
 }
 
 const login = async (req, res) => {
@@ -44,15 +49,37 @@ const register = async (req, res) => {
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10)
+        const secretAccessToken = getSecretToken()
 
         const response = await client.query(
-            "INSERT INTO users (username, password, email, name) VALUES ($1, $2, $3, $4) RETURNING *", 
-            [username, hashedPassword, email, name]
+            "INSERT INTO users (username, password, email, name, secret_access_token) VALUES ($1, $2, $3, $4, $5) RETURNING *", 
+            [username, hashedPassword, email, name, secretAccessToken]
         )
 
         const token = await getToken(response.rows[0].id, username, email)
 
         res.status(200).json({"message": response.rows, "AUTH_TOKEN": token})
+    }
+    catch (error) {
+        console.error(error)
+        res.status(400).json({"error": error})
+    }
+}
+
+const createKey = async (req, res) => {
+    try {
+        const token = req.headers.authorization.split(' ')[1]
+        const {id, username, email} = jwt.decode(token, process.env.JWT_SECRET)
+    
+        const secretKey = getSecretToken()
+
+        const response = await client.query(
+            "UPDATE users SET secret_access_token = $1 WHERE id = $2", 
+            [secretKey, id]
+        )
+    
+        res.status(200).json({"message": "Obtained secret key"})
+
     }
     catch (error) {
         console.error(error)
@@ -123,4 +150,4 @@ const updateProfile = async (req, res) => {
     }
 }
 
-export { login, register, getProfile, updateProfile }
+export { login, register, createKey, getProfile, updateProfile }
