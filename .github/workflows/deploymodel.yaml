@@ -73,6 +73,7 @@ jobs:
         run: |
           set -e
           if ! aws lambda get-function --function-name ${{ env.FILENAME }} > /dev/null 2>&1; then
+            echo "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
             aws lambda create-function \
               --function-name "${{ env.FILENAME }}" \
               --package-type "Image" \
@@ -93,5 +94,6 @@ jobs:
               --statement-id "FunctionURLAllowPublicAccess" \
               --function-url-auth-type NONE > /dev/null 2>&1
           else
+            echo "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
             aws lambda update-function-code --image-uri "ImageUri=${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}" > /dev/null 2>&1
           fi

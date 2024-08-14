@@ -174,7 +174,7 @@ const deployModel = async (req, res) => {
         }
 
         const model_id = await client.query(
-            "SELECT id FROM model WHERE modelname = $1 AND project_id = $2",
+            "SELECT id, model_id FROM model WHERE modelname = $1 AND project_id = $2",
             [model_name, project_id.rows[0].project_id]
         )
 
@@ -195,7 +195,7 @@ const deployModel = async (req, res) => {
             })
         })
 
-        const id = randomUUID().toString()
+        const id = model_id.rows[0].model_id
 
         const uploadFile = (bucket, folder, key, body) => {
             return new Promise((resolve, reject) => {

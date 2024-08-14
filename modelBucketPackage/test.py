@@ -8,4 +8,4 @@ client = mb.Client(
 client.deploy(model_path        = "test_model.joblib",
               dependencies_path = "requirements.txt",
               proj_name         = "gfd",
-              model_name        = "newModel")
+              model_name        = "TestModel")
