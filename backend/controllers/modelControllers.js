@@ -251,36 +251,6 @@ const deployModel = async (req, res) => {
             }
         }
 
-        // console.log(data)
-
-        // let function_config = ""
-        // let function_url = ""
-
-        // while (true) {
-        //     try {
-        //         function_config = await lambda.getFunctionUrlConfig({FunctionName: id}).promise()
-        //         function_url = function_config.FunctionUrl
-        //         break
-        //     }
-        //     catch (error) {
-        //         setTimeout(() => {}, 10000)
-        //         continue
-        //     }
-        // }
-
-        // await fetch(process.env.VITE_BACKEND_URI + "/api/model/update", {
-        //     method: "PUT",
-        //     headers: {
-        //         "content-type": "application/json",
-        //     },
-        //     body: JSON.stringify({
-        //         "secretAccessToken": secretAccessToken,
-        //         "project_id": project_id.rows[0].project_id, 
-        //         "model_id": model_id.rows[0].id,
-        //         "state": "ACTIVE",
-        //         "model_url": function_url
-        //     })
-        // })
         res.status(200).json({"message": "deployment successful"})
     }
     catch (error) {

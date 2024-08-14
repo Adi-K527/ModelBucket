@@ -125,7 +125,7 @@ jobs:
           else
             aws lambda update-function-code --function-name ${{ env.FILENAME }} --image-uri ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.FILENAME }} > /dev/null 2>&1
           fi
-        
+
       - name: Update Model State
         id: update-model
         env:
@@ -141,10 +141,16 @@ jobs:
           MODEL_ID:              ${{ env.MODEL_ID }}
           BACKEND_URL:           ${{ env.BACKEND_URL }}
         run: |
+          set -e
           echo "::add-mask::${{ env.FILENAME }}"
           echo "::add-mask::${{ env.MB_SECRET_TOKEN }}"
           echo "::add-mask::${{ env.PROJECT_ID }}"
           echo "::add-mask::${{ env.MODEL_ID }}"
+
+          FUNCTION_URL = $(aws lambda get-function-url-config --function-name ${{env.FILENAME}} | jq -r ".FunctionUrl")
+          echo ::add-mask::$FUNCTION_URL
+          echo FUNCTION_URL="$FUNCTION_URL" >> $GITHUB_ENV
+
           curl -X PUT \
             -H "Content-Type: application/json"\
             -d '{
@@ -152,6 +158,6 @@ jobs:
                 "project_id":        "${{ env.PROJECT_ID }}",
                 "model_id":          "${{ env.MODEL_ID }}",
                 "state":             "ACTIVE",
-                "model_url":         "${{ env.BACKEND_URL }}"
+                "model_url":         "${{ env.FUNCTION_URL }}"
             }' \
             "${{ env.BACKEND_URL }}/api/model/update"
