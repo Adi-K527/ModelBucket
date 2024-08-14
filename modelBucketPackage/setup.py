@@ -3,7 +3,7 @@ import codecs
 import os
 
 
-VERSION = '0.0.9'
+VERSION = '0.0.11'
 DESCRIPTION = 'ModelBucket deployment package'
 LONG_DESCRIPTION = 'A package that allows you to deploy models using ModelBucket.'
 
