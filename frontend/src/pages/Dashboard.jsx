@@ -7,6 +7,7 @@ const Dashboard = () => {
   const [projectName,   setProjectName]   = useState("");
   const [projects, setProjects] = useState([]);
   const [token, setToken] = useState("")
+  const [apiKey, setApiKey] = useState("")
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -100,6 +101,10 @@ const Dashboard = () => {
         },
         body: JSON.stringify({}),
       });
+
+      const data = await res.json()
+
+      setApiKey(data.key)
     }
     catch (error) {
       console.error(error);
@@ -155,6 +160,7 @@ const Dashboard = () => {
         </div>
       )}
       <button onClick={handleGenerateKey}>Generate Key</button>
+      <p>{apiKey}</p>
     </div>
   );
 };

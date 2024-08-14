@@ -25,7 +25,7 @@ setup(
         "Programming Language :: Python :: 3",
         "Operating System :: Unix",
         "Operating System :: MacOS :: MacOS X",
-        "Operating System :: Microsoft :: Windows",
+        "Operating System :: Microsoft :: Windows", 
     ]
 )
 

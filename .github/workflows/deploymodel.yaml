@@ -17,7 +17,6 @@ env:
   MODEL_FILES_BUCKET:    ${{ secrets.MODEL_FILES_BUCKET }}
   FILENAME:              ${{ inputs.filename }}
 
-
 jobs:
   deploy:
     name: Deploy
@@ -38,11 +37,19 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@62f4f872db3836360b72999f4b87f1ff13310f3a
 
+      - name: Delete existing image
+        id: delete-image-if-present
+        run: |
+          set -e
+          if aws ecr describe-images --repository-name ${{ env.ECR_REPOSITORY }} --image-ids imageTag=${{ env.FILENAME }} --region us-east-1 > /dev/null 2>&1; then
+            aws ecr batch-delete-image --repository-name ${{ env.ECR_REPOSITORY }} --image-ids imageTag=${{ env.FILENAME }} --region us-east-1 > /dev/null 2>&1
+          fi
+
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG:    ${{ github.sha }}
+          IMAGE_TAG:    ${{ env.FILENAME }}
           AWS_REGION:   ${{ env.AWS_REGION }}
           AWS_ACCESS_KEY_ID:     ${{ env.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
@@ -64,23 +71,27 @@ jobs:
           MODEL_FILES_BUCKET:    ${{ secrets.MODEL_FILES_BUCKET }}
           IMAGE_TAG:             ${{ github.sha }}
         run: |
-          aws lambda create-function \
-            --function-name "${{ env.FILENAME }}" \
-            --package-type "Image" \
-            --code "ImageUri=${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}" \
-            --role "arn:aws:iam::${{ env.ACCOUNT_ID }}:role/mb-lambda-deployment-iam-role" \
-            --environment "Variables={MY_AWS_ACCESS_THING=${{ secrets.AWS_ACCESS_KEY_ID }},AWS_SECRET_ACCESS=${{ secrets.AWS_SECRET_ACCESS_KEY }},AWS_BUCKET=${{ env.MODEL_FILES_BUCKET }},MODEL_NAME=${{ env.FILENAME }}}" \
-            --memory-size 256 \
-            --timeout 300 > /dev/null 2>&1
+          set -e
+          if aws lambda get-function --function-name ${{ env.FILENAME }} > /dev/null 2>&1; then
+            aws lambda create-function \
+              --function-name "${{ env.FILENAME }}" \
+              --package-type "Image" \
+              --code "ImageUri=${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}" \
+              --role "arn:aws:iam::${{ env.ACCOUNT_ID }}:role/mb-lambda-deployment-iam-role" \
+              --environment "Variables={MY_AWS_ACCESS_THING=${{ secrets.AWS_ACCESS_KEY_ID }},AWS_SECRET_ACCESS=${{ secrets.AWS_SECRET_ACCESS_KEY }},AWS_BUCKET=${{ env.MODEL_FILES_BUCKET }},MODEL_NAME=${{ env.FILENAME }}}" \
+              --memory-size 256 \
+              --timeout 300 > /dev/null 2>&1
 
-          aws lambda create-function-url-config \
-            --function-name "${{ env.FILENAME }}" \
-            --auth-type NONE > /dev/null 2>&1
+            aws lambda create-function-url-config \
+              --function-name "${{ env.FILENAME }}" \
+              --auth-type NONE > /dev/null 2>&1
 
-          aws lambda add-permission \
-            --function-name "${{ env.FILENAME }}" \
-            --action "lambda:InvokeFunctionUrl" \
-            --principal "*" \
-            --statement-id "FunctionURLAllowPublicAccess" \
-            --function-url-auth-type NONE > /dev/null 2>&1
-
+            aws lambda add-permission \
+              --function-name "${{ env.FILENAME }}" \
+              --action "lambda:InvokeFunctionUrl" \
+              --principal "*" \
+              --statement-id "FunctionURLAllowPublicAccess" \
+              --function-url-auth-type NONE > /dev/null 2>&1
+          else
+            aws lambda update-function-code --image-uri "ImageUri=${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}" > /dev/null 2>&1
+          fi

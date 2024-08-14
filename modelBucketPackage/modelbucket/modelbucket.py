@@ -6,7 +6,7 @@ class Client():
         self.token = token
     
     def deploy(self, model_path, dependencies_path, proj_name, model_name):
-        url = "https://mb-cloudrun-backend-6816-7qerhjlmja-uc.a.run.app/api/model/deploy"
+        url = "http://localhost:3000/api/model/deploy"
 
         data = {
             "secretAccessToken": self.token, 

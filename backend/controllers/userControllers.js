@@ -78,7 +78,7 @@ const createKey = async (req, res) => {
             [secretKey, id]
         )
     
-        res.status(200).json({"message": "Obtained secret key"})
+        res.status(200).json({"key": secretKey})
 
     }
     catch (error) {
