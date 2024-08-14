@@ -182,7 +182,7 @@ const deployModel = async (req, res) => {
             return res.status(400).json({"Error": "Unable to find model or project"})
         }
 
-        await fetch(process.env.VITE_BACKEND_URL + "/api/model/update", {
+        await fetch(process.env.VITE_BACKEND_URI + "/api/model/update", {
             method: "PUT",
             headers: {
                 "content-type": "application/json",
@@ -249,7 +249,7 @@ const deployModel = async (req, res) => {
         }
 
 
-        await fetch(process.env.VITE_BACKEND_URL + "/api/model/update", {
+        await fetch(process.env.VITE_BACKEND_URI + "/api/model/update", {
             method: "PUT",
             headers: {
                 "content-type": "application/json",
