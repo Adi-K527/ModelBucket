@@ -93,5 +93,5 @@ jobs:
               --statement-id "FunctionURLAllowPublicAccess" \
               --function-url-auth-type NONE > /dev/null 2>&1
           else
-            aws lambda update-function-code --image-uri "ImageUri=${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.FILENAME }}" > /dev/null 2>&1
+            aws lambda update-function-code --function-name ${{ env.FILENAME }} --image-uri ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.FILENAME }} > /dev/null 2>&1
           fi
