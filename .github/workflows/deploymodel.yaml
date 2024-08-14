@@ -140,4 +140,4 @@ jobs:
                 "state":             "ACTIVE",
                 "model_url":         ${{ env.BACKEND_URL }}
             }' \
-            "${{ env.BACKEND_URL }}"
+            "${{ env.BACKEND_URL }}/api/model/update"
