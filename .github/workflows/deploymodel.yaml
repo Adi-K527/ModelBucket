@@ -24,10 +24,6 @@ env:
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   MODEL_REQS_BUCKET:     ${{ secrets.MODEL_REQS_BUCKET }}
   MODEL_FILES_BUCKET:    ${{ secrets.MODEL_FILES_BUCKET }}
-  FILENAME:              ${{ inputs.filename }}
-  MB_SECRET_TOKEN:       ${{ inputs.secrettoken }}
-  PROJECT_ID:            ${{ inputs.project_id }}
-  MODEL_ID:              ${{ inputs.model_id }}
   BACKEND_URL:           ${{ secrets.VITE_BACKEND_URI }}
 
 jobs:
@@ -36,6 +32,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Create secret environment variables from inputs 
+        run: |
+          FILENAME=$(jq -r '.inputs.filename' $GITHUB_EVENT_PATH)
+          echo ::add-mask::$FILENAME
+          echo FILENAME="$FILENAME" >> $GITHUB_ENV
+
+          MB_SECRET_TOKEN=$(jq -r '.inputs.secrettoken' $GITHUB_EVENT_PATH)
+          echo ::add-mask::$MB_SECRET_TOKEN
+          echo MB_SECRET_TOKEN="$MB_SECRET_TOKEN" >> $GITHUB_ENV
+
+          PROJECT_ID=$(jq -r '.inputs.project_id' $GITHUB_EVENT_PATH)
+          echo ::add-mask::$PROJECT_ID
+          echo PROJECT_ID="$PROJECT_ID" >> $GITHUB_ENV
+
+          MODEL_ID=$(jq -r '.inputs.model_id' $GITHUB_EVENT_PATH)
+          echo ::add-mask::$MODEL_ID
+          echo MODEL_ID="$MODEL_ID" >> $GITHUB_ENV
+
       - name: Checkout
         uses: actions/checkout@v4
 
