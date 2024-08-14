@@ -126,15 +126,23 @@ jobs:
             aws lambda update-function-code --function-name ${{ env.FILENAME }} --image-uri ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.FILENAME }} > /dev/null 2>&1
           fi
 
-      - name: Update Model State
-        id: update-model
+      - name: Retrieve Lambda function URL
+        id: get-function-url
         env:
           AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           ACCOUNT_ID:            ${{ secrets.ACCOUNT_ID }}
-          ECR_REPOSITORY:        ${{ secrets.ECR_REPOSITORY }}
-          MODEL_FILES_BUCKET:    ${{ secrets.MODEL_FILES_BUCKET }}
-          IMAGE_TAG:             ${{ github.sha }}
+          FILENAME:              ${{ env.FILENAME }}
+        run: |
+          set -e
+          FUNCTION_URL=$(aws lambda get-function-url-config --function-name "${{env.FILENAME}}" | jq -r ".FunctionUrl")
+          echo ::add-mask::$FUNCTION_URL
+          echo FUNCTION_URL="$FUNCTION_URL" >> $GITHUB_ENV
+
+
+      - name: Update Model State
+        id: update-model
+        env:
           FILENAME:              ${{ env.FILENAME }}
           MB_SECRET_TOKEN:       ${{ env.MB_SECRET_TOKEN }}
           PROJECT_ID:            ${{ env.PROJECT_ID }}
@@ -142,15 +150,6 @@ jobs:
           BACKEND_URL:           ${{ env.BACKEND_URL }}
         run: |
           set -e
-          echo "::add-mask::${{ env.FILENAME }}"
-          echo "::add-mask::${{ env.MB_SECRET_TOKEN }}"
-          echo "::add-mask::${{ env.PROJECT_ID }}"
-          echo "::add-mask::${{ env.MODEL_ID }}"
-
-          FUNCTION_URL=$(aws lambda get-function-url-config --function-name ${{env.FILENAME}} | jq -r ".FunctionUrl")
-          echo ::add-mask::$FUNCTION_URL
-          echo FUNCTION_URL="$FUNCTION_URL" >> $GITHUB_ENV
-
           curl -X PUT \
             -H "Content-Type: application/json"\
             -d '{
