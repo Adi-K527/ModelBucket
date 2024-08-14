@@ -2,7 +2,6 @@ import jwt from "jsonwebtoken"
 import { client } from "../server.js"
 
 const secure = async (req, res, next) => {
-    console.log(req)
     try {
         if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
             const token = req.headers.authorization.split(' ')[1]

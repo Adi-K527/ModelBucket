@@ -7,9 +7,22 @@ import projectRoutes from "./routes/projectRoutes.js"
 import modelRoutes from "./routes/modelRoutes.js"
 import cookieParser from "cookie-parser"
 import timeout from "connect-timeout"
+import AWS from "aws-sdk"
+
 
 const app = express()
 dotenv.config()
+
+AWS.config.update({
+    credentials: {
+        accessKeyId:     process.env.AWS_ACCESS_KEY,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+    },
+    region: "us-east-1"
+})
+
+const s3 = new AWS.S3()
+const lambda = new AWS.Lambda()
 
 const port = process.env.PORT || 8080
 
@@ -34,4 +47,4 @@ app.use("/api/model",      modelRoutes)
 
 app.listen(port, () => console.log(`Listening on port ${port}`))
 
-export { client, app }
+export { client, app, s3, lambda}
