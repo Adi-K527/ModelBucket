@@ -148,7 +148,7 @@ jobs:
           curl -X PUT \
             -H "Content-Type: application/json"\
             -d '{
-                "secretAccessToken": "${{ env.MB_SECRET_TOKEN }},
+                "secretAccessToken": "${{ env.MB_SECRET_TOKEN }}",
                 "project_id":        "${{ env.PROJECT_ID }}",
                 "model_id":          "${{ env.MODEL_ID }}",
                 "state":             "ACTIVE",
