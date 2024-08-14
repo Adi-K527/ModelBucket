@@ -147,7 +147,7 @@ jobs:
           echo "::add-mask::${{ env.PROJECT_ID }}"
           echo "::add-mask::${{ env.MODEL_ID }}"
 
-          FUNCTION_URL = $(aws lambda get-function-url-config --function-name ${{env.FILENAME}} | jq -r ".FunctionUrl")
+          FUNCTION_URL=$(aws lambda get-function-url-config --function-name ${{env.FILENAME}} | jq -r ".FunctionUrl")
           echo ::add-mask::$FUNCTION_URL
           echo FUNCTION_URL="$FUNCTION_URL" >> $GITHUB_ENV
 
