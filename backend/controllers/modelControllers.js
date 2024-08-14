@@ -228,40 +228,59 @@ const deployModel = async (req, res) => {
             body: JSON.stringify({
                 ref: 'main',
                 inputs: {
-                    "filename": id
+                    "filename": id,
+                    "secrettoken": secretAccessToken,
+                    "project_id": project_id.rows[0].project_id,
+                    "model_id": model_id.rows[0].model_id
                 }
             })
         });
 
-        let function_config = ""
-        let function_url = ""
-
         while (true) {
-            try {
-                function_config = await lambda.getFunctionUrlConfig({FunctionName: id}).promise()
-                function_url = function_config.FunctionUrl
+            const isPresent = await client.query(
+                "SELECT state FROM model WHERE model_id = $1",
+                [model_id.rows[0].model_id]
+            )
+            const state = isPresent.rows[0].state
+            
+            if (state !== "PENDING") {
                 break
             }
-            catch (error) {
+            else {
                 setTimeout(() => {}, 10000)
-                continue
             }
         }
 
+        // console.log(data)
 
-        await fetch(process.env.VITE_BACKEND_URI + "/api/model/update", {
-            method: "PUT",
-            headers: {
-                "content-type": "application/json",
-            },
-            body: JSON.stringify({
-                "secretAccessToken": secretAccessToken,
-                "project_id": project_id.rows[0].project_id, 
-                "model_id": model_id.rows[0].id,
-                "state": "ACTIVE",
-                "model_url": function_url
-            })
-        })
+        // let function_config = ""
+        // let function_url = ""
+
+        // while (true) {
+        //     try {
+        //         function_config = await lambda.getFunctionUrlConfig({FunctionName: id}).promise()
+        //         function_url = function_config.FunctionUrl
+        //         break
+        //     }
+        //     catch (error) {
+        //         setTimeout(() => {}, 10000)
+        //         continue
+        //     }
+        // }
+
+        // await fetch(process.env.VITE_BACKEND_URI + "/api/model/update", {
+        //     method: "PUT",
+        //     headers: {
+        //         "content-type": "application/json",
+        //     },
+        //     body: JSON.stringify({
+        //         "secretAccessToken": secretAccessToken,
+        //         "project_id": project_id.rows[0].project_id, 
+        //         "model_id": model_id.rows[0].id,
+        //         "state": "ACTIVE",
+        //         "model_url": function_url
+        //     })
+        // })
         res.status(200).json({"message": "deployment successful"})
     }
     catch (error) {

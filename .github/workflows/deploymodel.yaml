@@ -6,6 +6,15 @@ on:
       filename:
         description: "name of model file"
         required: true
+      secrettoken:
+        description: "mb auth token"
+        required: true
+      project_id:
+        description: "id of project"
+        required: true
+      model_id: 
+        description: "id of model"
+        required: true
 
 env:
   AWS_REGION:            ${{ secrets.AWS_REGION }}
@@ -16,6 +25,10 @@ env:
   MODEL_REQS_BUCKET:     ${{ secrets.MODEL_REQS_BUCKET }}
   MODEL_FILES_BUCKET:    ${{ secrets.MODEL_FILES_BUCKET }}
   FILENAME:              ${{ inputs.filename }}
+  MB_SECRET_TOKEN:       ${{ inputs.secrettoken }}
+  PROJECT_ID:            ${{ inputs.project_id }}
+  MODEL_ID:              ${{ inputs.model_id }}
+  BACKEND_URL:           ${{ secrets.VITE_BACKEND_URI }}
 
 jobs:
   deploy:
@@ -41,6 +54,7 @@ jobs:
         id: delete-image-if-present
         run: |
           set -e
+          echo "::add-mask::${{ env.FILENAME }}"
           if aws ecr describe-images --repository-name ${{ env.ECR_REPOSITORY }} --image-ids imageTag=${{ env.FILENAME }} --region us-east-1 > /dev/null 2>&1; then
             aws ecr batch-delete-image --repository-name ${{ env.ECR_REPOSITORY }} --image-ids imageTag=${{ env.FILENAME }} --region us-east-1 > /dev/null 2>&1
           fi
@@ -56,6 +70,7 @@ jobs:
           S3_BUCKET:  ${{ env.MODEL_REQS_BUCKET }}
           S3_KEY_REQ: ${{ env.FILENAME }}
         run: |
+          echo "::add-mask::${{ env.IMAGE_TAG }}"
           docker build --build-arg AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --build-arg AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY --build-arg AWS_DEFAULT_REGION=$AWS_REGION --build-arg S3_BUCKET=$S3_BUCKET --build-arg S3_KEY_REQ=$S3_KEY_REQ -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./modelAPITemplate
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
@@ -72,6 +87,7 @@ jobs:
           IMAGE_TAG:             ${{ github.sha }}
         run: |
           set -e
+          echo "::add-mask::${{ env.FILENAME }}"
           if ! aws lambda get-function --function-name ${{ env.FILENAME }} > /dev/null 2>&1; then
             aws lambda create-function \
               --function-name "${{ env.FILENAME }}" \
@@ -95,3 +111,33 @@ jobs:
           else
             aws lambda update-function-code --function-name ${{ env.FILENAME }} --image-uri ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.FILENAME }} > /dev/null 2>&1
           fi
+        
+      - name: Update Model State
+        id: update-model
+        env:
+          AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          ACCOUNT_ID:            ${{ secrets.ACCOUNT_ID }}
+          ECR_REPOSITORY:        ${{ secrets.ECR_REPOSITORY }}
+          MODEL_FILES_BUCKET:    ${{ secrets.MODEL_FILES_BUCKET }}
+          IMAGE_TAG:             ${{ github.sha }}
+          FILENAME:              ${{ env.FILENAME }}
+          MB_SECRET_TOKEN:       ${{ env.MB_SECRET_TOKEN }}
+          PROJECT_ID:            ${{ env.PROJECT_ID }}
+          MODEL_ID:              ${{ env.MODEL_ID }}
+          BACKEND_URL:           ${{ env.BACKEND_URL }}
+        run: |
+          echo "::add-mask::${{ env.FILENAME }}"
+          echo "::add-mask::${{ env.MB_SECRET_TOKEN }}"
+          echo "::add-mask::${{ env.PROJECT_ID }}"
+          echo "::add-mask::${{ env.MODEL_ID }}"
+          curl -X PUT \
+            -H "Content-Type": "application/json"\
+            -d '{
+                "secretAccessToken": ${{ env.MB_SECRET_TOKEN }},
+                "project_id":        ${{ env.PROJECT_ID }},
+                "model_id":          ${{ env.MODEL_ID }},
+                "state":             "ACTIVE",
+                "model_url":         ${{ env.BACKEND_URL }}
+            }' \
+            "${{ env.BACKEND_URL }}"
