@@ -146,12 +146,12 @@ jobs:
           echo "::add-mask::${{ env.PROJECT_ID }}"
           echo "::add-mask::${{ env.MODEL_ID }}"
           curl -X PUT \
-            -H "Content-Type": "application/json"\
+            -H "Content-Type: application/json"\
             -d '{
-                "secretAccessToken": ${{ env.MB_SECRET_TOKEN }},
-                "project_id":        ${{ env.PROJECT_ID }},
-                "model_id":          ${{ env.MODEL_ID }},
+                "secretAccessToken": "${{ env.MB_SECRET_TOKEN }},
+                "project_id":        "${{ env.PROJECT_ID }}",
+                "model_id":          "${{ env.MODEL_ID }}",
                 "state":             "ACTIVE",
-                "model_url":         ${{ env.BACKEND_URL }}
+                "model_url":         "${{ env.BACKEND_URL }}"
             }' \
             "${{ env.BACKEND_URL }}/api/model/update"

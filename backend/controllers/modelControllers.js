@@ -231,7 +231,7 @@ const deployModel = async (req, res) => {
                     "filename": id,
                     "secrettoken": secretAccessToken,
                     "project_id": project_id.rows[0].project_id,
-                    "model_id": model_id.rows[0].model_id
+                    "model_id": model_id.rows[0].id
                 }
             })
         });
@@ -242,7 +242,7 @@ const deployModel = async (req, res) => {
                 [model_id.rows[0].model_id]
             )
             const state = isPresent.rows[0].state
-            
+
             if (state !== "PENDING") {
                 break
             }
