@@ -53,6 +53,12 @@ jobs:
                 MODEL_ID=$(jq -r '.inputs.model_id' $GITHUB_EVENT_PATH)
                 echo ::add-mask::$MODEL_ID
                 echo MODEL_ID="$MODEL_ID" >> $GITHUB_ENV
+
+                echo ::add-mask::$SERVER_IPV4
+                echo SERVER_IPV4="$SERVER_IPV4" >> $GITHUB_ENV
+
+                echo ::add-mask::$SERVER_ID
+                echo SERVER_ID="$SERVER_ID" >> $GITHUB_ENV
     
             - name: Checkout
               uses: actions/checkout@v4
