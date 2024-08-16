@@ -56,10 +56,8 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v4
 
-            - name: Set up Homebrew
-              run: |
-                echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >>~/.profile
-                eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+            - name: Setup Homebrew
+              uses: Homebrew/actions/setup-homebrew@master
 
             - name: Create Hetzner Server
               run: |
