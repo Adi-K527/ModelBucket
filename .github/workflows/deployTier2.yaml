@@ -67,5 +67,6 @@ jobs:
                 server-type: "cx22"
                 ssh-key-name: "hetzner_key"
                 hcloud-token: ${{ secrets.HETZNER_TOKEN }}
+                delete-server: false
             
             
