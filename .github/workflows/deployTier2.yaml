@@ -62,7 +62,7 @@ jobs:
             - uses: 3bit/setup-hcloud@v2
             - run: hcloud version
               env:
-                HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+                HCLOUD_TOKEN: ${{ secrets.HETZNER_TOKEN }}
 
             - name: Create Hetzner Server
               run: |
