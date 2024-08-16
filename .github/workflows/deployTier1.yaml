@@ -1,4 +1,4 @@
-name: "Deploy Model"
+name: "Deploy Model Tier 1"
 
 on:
   workflow_dispatch:
@@ -138,7 +138,6 @@ jobs:
           FUNCTION_URL=$(aws lambda get-function-url-config --function-name "${{env.FILENAME}}" | jq -r ".FunctionUrl")
           echo ::add-mask::$FUNCTION_URL
           echo FUNCTION_URL="$FUNCTION_URL" >> $GITHUB_ENV
-
 
       - name: Update Model State
         id: update-model

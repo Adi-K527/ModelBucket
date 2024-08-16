@@ -1,0 +1,72 @@
+name: "Deploy model Tier 2"
+
+
+on:
+    workflow_dispatch:
+      inputs:
+        filename:
+          description: "name of model file"
+          required: true
+        secrettoken:
+          description: "mb auth token"
+          required: true
+        project_id:
+          description: "id of project"
+          required: true
+        model_id: 
+          description: "id of model"
+          required: true
+
+env:
+  AWS_REGION:            ${{ secrets.AWS_REGION }}
+  ECR_REPOSITORY:        ${{ secrets.ECR_REPOSITORY }}
+  ACCOUNT_ID:            ${{ secrets.ACCOUNT_ID }}
+  AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  MODEL_REQS_BUCKET:     ${{ secrets.MODEL_REQS_BUCKET }}
+  MODEL_FILES_BUCKET:    ${{ secrets.MODEL_FILES_BUCKET }}
+  BACKEND_URL:           ${{ secrets.VITE_BACKEND_URI }}
+  HETZNER_TOKEN:         ${{ secrets.HETZNER_TOKEN }}
+
+
+jobs:
+    deploy:
+        name: Deploy
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Create secret environment variables from inputs 
+              run: |
+                FILENAME=$(jq -r '.inputs.filename' $GITHUB_EVENT_PATH)
+                echo ::add-mask::$FILENAME
+                echo FILENAME="$FILENAME" >> $GITHUB_ENV
+        
+                MB_SECRET_TOKEN=$(jq -r '.inputs.secrettoken' $GITHUB_EVENT_PATH)
+                echo ::add-mask::$MB_SECRET_TOKEN
+                echo MB_SECRET_TOKEN="$MB_SECRET_TOKEN" >> $GITHUB_ENV
+        
+                PROJECT_ID=$(jq -r '.inputs.project_id' $GITHUB_EVENT_PATH)
+                echo ::add-mask::$PROJECT_ID
+                echo PROJECT_ID="$PROJECT_ID" >> $GITHUB_ENV
+        
+                MODEL_ID=$(jq -r '.inputs.model_id' $GITHUB_EVENT_PATH)
+                echo ::add-mask::$MODEL_ID
+                echo MODEL_ID="$MODEL_ID" >> $GITHUB_ENV
+    
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Set up Homebrew
+              run: |
+                echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >>~/.profile
+                eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+            - name: Create Hetzner Server
+              run: |
+                set -e
+                brew install hcloud
+                export HCLOUD_TOKEN=${{env.HETZNER_TOKEN}}
+                hcloud context create ModelBucket 
+                hcloud server create --image ubuntu-22.04 --type cx22 --name ${{env.FILENAME}} 
+            
+            
