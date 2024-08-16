@@ -59,11 +59,14 @@ jobs:
             - name: Setup Homebrew
               uses: Homebrew/actions/setup-homebrew@master
 
+            - uses: 3bit/setup-hcloud@v2
+            - run: hcloud version
+              env:
+                HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+
             - name: Create Hetzner Server
               run: |
                 set -e
-                brew install hcloud
-                export HCLOUD_TOKEN=${{env.HETZNER_TOKEN}}
                 hcloud context create ModelBucket 
                 hcloud server create --image ubuntu-22.04 --type cx22 --name ${{env.FILENAME}} 
             
