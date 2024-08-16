@@ -67,7 +67,6 @@ jobs:
             - name: Create Hetzner Server
               run: |
                 set -e
-                hcloud context create ModelBucket 
                 hcloud server create --image ubuntu-22.04 --type cx22 --name ${{env.FILENAME}} 
             
             
