@@ -57,8 +57,7 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v4
 
-            - name: Setup Hetzner Server
-              uses: TimDaub/hetzner-cloud-deploy-server-action@v2
+            - uses: TimDaub/hetzner-cloud-deploy-server-action@v2
               with:
                 server-name: ${{ env.FILENAME }}
                 server-image: "ubuntu-20.04"
@@ -66,23 +65,15 @@ jobs:
                 ssh-key-name: "hetzner_key"
                 hcloud-token: ${{ secrets.HETZNER_TOKEN }}
                 delete-server: false
+            - uses: webfactory/ssh-agent@v0.4.1
+              with:
+                ssh-private-key: ${{ secrets.HETZNER_SSH_KEY }}
+            - run: |
+                mkdir -p ~/.ssh/ && ssh-keyscan -H $SERVER_IPV4 >> ~/.ssh/known_hosts
+                ssh root@$SERVER_IPV4 
+                sudo apt update 
+                sudo apt upgrade -y
+                curl -sfL https://get.k3s.io | sh -
             
-            - name: Add Server IP to hosts file
-              env:
-                HCLOUD_TOKEN: ${{ secrets.HETZNER_TOKEN }}
-              working-directory: ./playbooks/inventory
-              run: |
-                server_id=$(hcloud server list --selector name=${{ env.FILENAME }} -o json | jq -r '.[0].id')
-                SERVER_IP=$(hcloud server describe $server_id -o json | jq -r '.public_net.ipv4.ip')
-                echo ::add-mask::$SERVER_IP
-                echo SERVER_IP="$SERVER_IP" >> $GITHUB_ENV
-                echo $SERVER_IP > hosts
-            
-            - name: Configure Server with Ansible
-              run: | 
-                echo ${{ env.HETZNER_SSH_KEY }} > ansible/.ssh/id_rsa
-                echo "${{ env.SERVER_IP }} ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa" >> temp_inventory
-                docker run --rm -v $(pwd):/workspace -v ~/.ssh:/root/.ssh ghcr.io/ansible/creator-ee:v0.21.0 ansible-playbook -i /workspace/temp_inventory /workspace/ansible/setup.yml
-                rm temp_inventory
               
                 
