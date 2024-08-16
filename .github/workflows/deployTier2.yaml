@@ -57,15 +57,10 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v4
 
-            - name: Set up Ansible
-              uses: devops-infra/action-ansible@v2
-              with:
-                ansible_version: 2.13.0
-
             - name: Setup Hetzner Server
               uses: TimDaub/hetzner-cloud-deploy-server-action@v2
               with:
-                server-name: "TestServer"
+                server-name: ${{ env.FILENAME }}
                 server-image: "ubuntu-20.04"
                 server-type: "cx22"
                 ssh-key-name: "hetzner_key"
@@ -87,7 +82,7 @@ jobs:
               run: | 
                 echo ${{ env.HETZNER_SSH_KEY }} > ansible/.ssh/id_rsa
                 echo "${{ env.SERVER_IP }} ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa" >> temp_inventory
-                ansible-playbook -i temp_inventory ansible/setup.yml
+                docker run --rm -v $(pwd):/workspace -v ~/.ssh:/root/.ssh ghcr.io/ansible/creator-ee:v0.21.0 ansible-playbook -i /workspace/temp_inventory /workspace/ansible/setup.yml
                 rm temp_inventory
               
                 
