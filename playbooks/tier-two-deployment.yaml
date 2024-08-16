@@ -1,0 +1,22 @@
+- name: Update and upgrade apt packages
+  hosts: all
+  become: true
+  tasks:
+    - name: Update and upgrade apt
+      apt:
+        update_cache: yes
+        upgrade: 'yes'
+    
+    - name: Install packages
+      apt:
+        name:
+          - curl
+          - git
+          - docker.io
+        state: present
+    
+    - name: Install k3s
+      shell: |
+        curl -sfL https://get.k3s.io | sh -
+      args:
+        executable: /bin/bash

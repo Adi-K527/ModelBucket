@@ -27,6 +27,7 @@ env:
   MODEL_FILES_BUCKET:    ${{ secrets.MODEL_FILES_BUCKET }}
   BACKEND_URL:           ${{ secrets.VITE_BACKEND_URI }}
   HETZNER_TOKEN:         ${{ secrets.HETZNER_TOKEN }}
+  HETZNER_SSH_KEY:       ${{ secrets.HETZNER_SSH_KEY }}
 
 
 jobs:
@@ -56,8 +57,10 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v4
 
-            - name: Setup Homebrew
-              uses: Homebrew/actions/setup-homebrew@master
+            - name: Set up Ansible
+              uses: devops-infra/action-ansible@v2
+              with:
+                ansible_version: 2.13.0
 
             - name: Setup Hetzner Server
               uses: TimDaub/hetzner-cloud-deploy-server-action@v2
@@ -69,4 +72,22 @@ jobs:
                 hcloud-token: ${{ secrets.HETZNER_TOKEN }}
                 delete-server: false
             
+            - name: Add Server IP to hosts file
+              env:
+                HCLOUD_TOKEN: ${{ secrets.HETZNER_TOKEN }}
+              working-directory: ./playbooks/inventory
+              run: |
+                server_id=$(hcloud server list --selector name=${{ env.FILENAME }} -o json | jq -r '.[0].id')
+                SERVER_IP=$(hcloud server describe $server_id -o json | jq -r '.public_net.ipv4.ip')
+                echo ::add-mask::$SERVER_IP
+                echo SERVER_IP="$SERVER_IP" >> $GITHUB_ENV
+                echo $SERVER_IP > hosts
             
+            - name: Configure Server with Ansible
+              run: | 
+                echo ${{ env.HETZNER_SSH_KEY }} > ansible/.ssh/id_rsa
+                echo "${{ env.SERVER_IP }} ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa" >> temp_inventory
+                ansible-playbook -i temp_inventory ansible/setup.yml
+                rm temp_inventory
+              
+                
