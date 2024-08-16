@@ -217,7 +217,7 @@ const deployModel = async (req, res) => {
         await uploadFile("mb-bucket-5125", "models",       id + ".joblib", model[0].buffer)
         await uploadFile("mb-bucket-5125", "dependencies", id,             dependencies[0].buffer)
     
-        const data = await fetch('https://api.github.com/repos/Adi-K527/ModelBucket/actions/workflows/deploymodel.yaml/dispatches', {
+        const data = await fetch('https://api.github.com/repos/Adi-K527/ModelBucket/actions/workflows/deployTier1.yaml/dispatches', {
             method: 'POST',
             headers: {
                 'Accept': 'application/vnd.github+json',
