@@ -115,7 +115,7 @@ jobs:
                   sudo apt update 
                   sudo apt upgrade -y
                   curl -sfL https://get.k3s.io | sh -
-                  sudo apt install docker.io
+                  sudo apt install -y docker.io
                   snap install aws-cli --classic --yes
                   export AWS_ACCESS_KEY_ID="${{env.AWS_ACCESS_KEY_ID}}"
                   export AWS_SECRET_ACCESS_KEY="${{env.AWS_SECRET_ACCESS_KEY}}"
