@@ -10,8 +10,6 @@ ARG S3_KEY_REQ
 
 RUN aws s3 cp s3://${S3_BUCKET}/${S3_KEY_REQ} requirements.txt
 RUN pip install -r requirements.txt 
-RUN pip install boto3
-RUN pip3 install boto3
 
 COPY src/ /app/
 WORKDIR /app
