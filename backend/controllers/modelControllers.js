@@ -150,6 +150,63 @@ const updateModel = async (req, res) => {
     }
 }
 
+const tier1Deployment = async (id, secretAccessToken, project_id, model_data) => {
+    const data = await fetch('https://api.github.com/repos/Adi-K527/ModelBucket/actions/workflows/deployTier1.yaml/dispatches', {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/vnd.github+json',
+            'Authorization': `Bearer ${process.env.GH_TOKEN}`,
+            'X-GitHub-Api-Version': '2022-11-28',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            ref: 'main',
+            inputs: {
+                "filename": id,
+                "secrettoken": secretAccessToken,
+                "project_id": project_id.rows[0].project_id,
+                "model_id": model_data.rows[0].id
+            }
+        })
+    });
+
+    while (true) {
+        const isPresent = await client.query(
+            "SELECT state FROM model WHERE model_id = $1",
+            [model_id.rows[0].model_id]
+        )
+        const state = isPresent.rows[0].state
+
+        if (state !== "PENDING") {
+            break
+        }
+        else {
+            setTimeout(() => {}, 10000)
+        }
+    }
+}
+
+const tier2Deployment = async (id, secretAccessToken, project_id, model_data) => {
+    const data = await fetch('https://api.github.com/repos/Adi-K527/ModelBucket/actions/workflows/deployTier2.yaml/dispatches', {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/vnd.github+json',
+            'Authorization': `Bearer ${process.env.GH_TOKEN}`,
+            'X-GitHub-Api-Version': '2022-11-28',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            ref: 'main',
+            inputs: {
+                "filename": id,
+                "secrettoken": secretAccessToken,
+                "project_id": project_id.rows[0].project_id,
+                "model_id": model_data.rows[0].id
+            }
+        })
+    });
+}
+
 const deployModel = async (req, res) => {
     try {
         let {secretAccessToken, proj_name, model_name} = req.body
@@ -173,12 +230,12 @@ const deployModel = async (req, res) => {
             return res.status(400).json({"Error": "Unable to find model or project"})
         }
 
-        const model_id = await client.query(
-            "SELECT id, model_id FROM model WHERE modelname = $1 AND project_id = $2",
+        const model_data = await client.query(
+            "SELECT id, model_id, deploymenttype FROM model WHERE modelname = $1 AND project_id = $2",
             [model_name, project_id.rows[0].project_id]
         )
 
-        if (model_id.rows.length < 1) {
+        if (model_data.rows.length < 1) {
             return res.status(400).json({"Error": "Unable to find model or project"})
         }
 
@@ -190,12 +247,12 @@ const deployModel = async (req, res) => {
             body: JSON.stringify({
                 "secretAccessToken": secretAccessToken,
                 "project_id": project_id.rows[0].project_id, 
-                "model_id": model_id.rows[0].id,
+                "model_id": model_data.rows[0].id,
                 "state": "PENDING"
             })
         })
 
-        const id = model_id.rows[0].model_id
+        const id = model_data.rows[0].model_id
 
         const uploadFile = (bucket, folder, key, body) => {
             return new Promise((resolve, reject) => {
@@ -217,38 +274,11 @@ const deployModel = async (req, res) => {
         await uploadFile("mb-bucket-5125", "models",       id + ".joblib", model[0].buffer)
         await uploadFile("mb-bucket-5125", "dependencies", id,             dependencies[0].buffer)
     
-        const data = await fetch('https://api.github.com/repos/Adi-K527/ModelBucket/actions/workflows/deployTier1.yaml/dispatches', {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/vnd.github+json',
-                'Authorization': `Bearer ${process.env.GH_TOKEN}`,
-                'X-GitHub-Api-Version': '2022-11-28',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                ref: 'main',
-                inputs: {
-                    "filename": id,
-                    "secrettoken": secretAccessToken,
-                    "project_id": project_id.rows[0].project_id,
-                    "model_id": model_id.rows[0].id
-                }
-            })
-        });
-
-        while (true) {
-            const isPresent = await client.query(
-                "SELECT state FROM model WHERE model_id = $1",
-                [model_id.rows[0].model_id]
-            )
-            const state = isPresent.rows[0].state
-
-            if (state !== "PENDING") {
-                break
-            }
-            else {
-                setTimeout(() => {}, 10000)
-            }
+        if (model_data.rows[0].deploymenttype == "TIER 1") {
+            tier1Deployment(id, secretAccessToken, project_id, model_data)
+        }
+        else {
+            tier2Deployment(id, secretAccessToken, project_id, model_data)
         }
 
         res.status(200).json({"message": "deployment successful"})

@@ -131,9 +131,8 @@ const Project = () => {
                   value="TIER 2"
                   checked={modelTier === "TIER 2"}
                   onChange={(e) => setModelTier(e.target.value)}
-                  disabled
                 />
-                TIER 2 (Coming Soon)
+                TIER 2 (DEVLOPMENT)
               </label>
             </div>
             <button type="submit">Submit</button>
