@@ -125,14 +125,9 @@ jobs:
                 ssh-private-key: ${{ env.HETZNER_SSH_KEY }}
             - run: |
                 ssh -o StrictHostKeyChecking=no root@${{ env.SERVER_IPV4 }} << 'EOF'
-                  sed -i "s|${IMAGE_URL}|${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:${{ env.FILENAME }}|g" deployments/Tier-2/kubernetes-config/deployment.yaml
-                  ls
-                  cd deployments
-                  ls
-                  cd Tier-2
-                  ls
-                  cd kubernetes-config
-                  cat deployment.yaml
+                  imageurl='${{env.ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:${{env.FILENAME}}'
+                  sed "s|\${IMAGE_URL}|$imageurl|g" deployments/Tier-2/kubernetes-config/deployment.yaml > ml-app-deployment.yaml
+
                   sudo apt update 
                   sudo apt upgrade -y
 
@@ -163,8 +158,8 @@ jobs:
                   --docker-email="${EMAIL}"
                   
                   kubectl apply  -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.2.1/deploy/static/provider/cloud/deploy.yaml
-                  kubectl create -f metallb.yaml
-                  kubectl create -f deployments/Tier-2/kubernetes-config/deployment.yaml
+                  kubectl create -f deployments/Tier-2/kubernetes-config/metallb.yaml
+                  kubectl create -f ml-app-deployment.yaml
                   kubectl expose deployment ml-app-deployment --type=LoadBalancer --name=ml-app-service --port=5000 --target-port=8001
 
             - name: Update Model State
