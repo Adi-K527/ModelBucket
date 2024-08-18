@@ -158,8 +158,8 @@ jobs:
                   --docker-email="${EMAIL}"
                   
                   kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.8/config/manifests/metallb-native.yaml
-                  kubectl apply  -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.2.1/deploy/static/provider/cloud/deploy.yaml
-                  kubectl create -f deployments/Tier-2/kubernetes-config/metallb.yaml
+                  kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.2.1/deploy/static/provider/cloud/deploy.yaml
+                  kubectl apply -f deployments/Tier-2/kubernetes-config/metallb.yaml
                   kubectl create -f ml-app-deployment.yaml
                   kubectl expose deployment ml-app-deployment --type=LoadBalancer --name=ml-app-service --port=5000 --target-port=8001
 
@@ -173,8 +173,6 @@ jobs:
                 BACKEND_URL:           ${{ env.BACKEND_URL }}
               run: |
                 set -e
-                echo ::add-mask::$MODEL_URL
-                echo MODEL_URL="http://${{ env.SERVER_IPV4 }}:5000" >> $GITHUB_ENV
                 curl -X PUT \
                   -H "Content-Type: application/json"\
                   -d '{
@@ -182,6 +180,6 @@ jobs:
                       "project_id":        "${{ env.PROJECT_ID }}",
                       "model_id":          "${{ env.MODEL_ID }}",
                       "state":             "ACTIVE",
-                      "model_url":         "${{ env.MODEL_URL }}"
+                      "model_url":         "http://${{ env.SERVER_IPV4 }}:5000"
                   }' \
                   "${{ env.BACKEND_URL }}/api/model/update"
