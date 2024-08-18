@@ -112,11 +112,22 @@ jobs:
                 ssh-key-name: "hetzner_key"
                 hcloud-token: ${{ secrets.HETZNER_TOKEN }}
                 delete-server: false
+
+            - name: Retrieve kubeconfig from server
+              uses: appleboy/scp-action@master
+              with:
+                host: ${{ env.SERVER_IPV4 }}
+                key: ${{ env.HETZNER_SSH_KEY }}
+                username: root
+                source: "./deployments/Tier-2/"
+                target: "./"
+
             - uses: webfactory/ssh-agent@v0.4.1
               with:
                 ssh-private-key: ${{ env.HETZNER_SSH_KEY }}
             - run: |
                 ssh -o StrictHostKeyChecking=no root@${{ env.SERVER_IPV4 }} << 'EOF'
+                  ls
                   sudo apt update 
                   sudo apt upgrade -y
 
@@ -145,15 +156,6 @@ jobs:
                   --docker-username=AWS \
                   --docker-password="${TOKEN}" \
                   --docker-email="${EMAIL}"
-
-            - name: Retrieve kubeconfig from server
-              uses: appleboy/scp-action@master
-              with:
-                host: ${{ env.SERVER_IPV4 }}
-                key: ${{ env.HETZNER_SSH_KEY }}
-                username: root
-                source: "root@${{ env.SERVER_IPV4 }}:/root/kubeconfig.txt"
-                target: "./kubeconfig.txt"
 
             - name: Update Model State
               id: update-model
