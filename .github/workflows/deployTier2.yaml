@@ -149,11 +149,11 @@ jobs:
             - name: Retrieve kubeconfig from server
               uses: appleboy/scp-action@master
               with:
+                host: ${{ env.SERVER_IPV4 }}
+                key: ${{ env.HETZNER_SSH_KEY }}
+                username: root
                 source: "root@${{ env.SERVER_IPV4 }}:/root/kubeconfig.txt"
                 target: "./kubeconfig.txt"
-              env:
-                SERVER_IPV4: ${{ env.SERVER_IPV4 }}
-                SSH_PRIVATE_KEY: ${{ env.HETZNER_SSH_KEY }}
 
             - name: Update Model State
               id: update-model
