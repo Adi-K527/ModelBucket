@@ -132,6 +132,8 @@ jobs:
                   docker login -u AWS -p $(aws ecr get-login-password) ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
                   docker pull ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:${{ env.FILENAME }}
 
+                  cat /etc/rancher/k3s/k3s.yaml | base64 > kubeconfig.txt
+
                   ACCOUNT=$(aws sts get-caller-identity --query 'Account' --output text)
                   REGION=us-east-1
                   SECRET_NAME=${REGION}-ecr-registry
@@ -143,8 +145,6 @@ jobs:
                   --docker-username=AWS \
                   --docker-password="${TOKEN}" \
                   --docker-email="${EMAIL}"
-                  
-                  cat /etc/rancher/k3s/k3s.yaml | base64 > kubeconfig.txt
 
             - name: Retrieve kubeconfig from server
               uses: appleboy/scp-action@master
