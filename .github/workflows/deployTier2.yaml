@@ -128,6 +128,12 @@ jobs:
             - run: |
                 ssh -o StrictHostKeyChecking=no root@${{ env.SERVER_IPV4 }} << 'EOF'
                   ls
+                  cd deployments
+                  ls
+                  cd Tier-2
+                  ls
+                  cd kubernetes-config
+                  cat deployment.yaml
                   sudo apt update 
                   sudo apt upgrade -y
 
