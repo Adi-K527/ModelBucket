@@ -77,8 +77,6 @@ jobs:
             - name: Install envsubst
               run: sudo apt-get install -y gettext-base
             
-            
-      
             - name: Delete existing image
               id: delete-image-if-present
               run: |
@@ -87,7 +85,7 @@ jobs:
                 if aws ecr describe-images --repository-name ${{ env.ECR_REPOSITORY }} --image-ids imageTag=${{ env.FILENAME }} --region us-east-1 > /dev/null 2>&1; then
                   aws ecr batch-delete-image --repository-name ${{ env.ECR_REPOSITORY }} --image-ids imageTag=${{ env.FILENAME }} --region us-east-1 > /dev/null 2>&1
                 fi
-      
+                
             - name: Build, tag, and push image to Amazon ECR
               id: build-image
               env:
@@ -119,7 +117,7 @@ jobs:
                 host: ${{ env.SERVER_IPV4 }}
                 key: ${{ env.HETZNER_SSH_KEY }}
                 username: root
-                source: "./deployments/Tier-2/"
+                source: "./deployments/Tier-2/kubernetes-config/"
                 target: "./"
 
             - uses: webfactory/ssh-agent@v0.4.1
@@ -127,6 +125,7 @@ jobs:
                 ssh-private-key: ${{ env.HETZNER_SSH_KEY }}
             - run: |
                 ssh -o StrictHostKeyChecking=no root@${{ env.SERVER_IPV4 }} << 'EOF'
+                  sed -i "s|${IMAGE_URL}|${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:${{ env.FILENAME }}|g" deployments/Tier-2/kubernetes-config/deployment.yaml
                   ls
                   cd deployments
                   ls
@@ -162,6 +161,11 @@ jobs:
                   --docker-username=AWS \
                   --docker-password="${TOKEN}" \
                   --docker-email="${EMAIL}"
+                  
+                  kubectl apply  -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.2.1/deploy/static/provider/cloud/deploy.yaml
+                  kubectl create -f metallb.yaml
+                  kubectl create -f deployments/Tier-2/kubernetes-config/deployment.yaml
+                  kubectl expose deployment ml-app-deployment --type=LoadBalancer --name=ml-app-service --port=5000 --target-port=8001
 
             - name: Update Model State
               id: update-model
