@@ -119,14 +119,19 @@ jobs:
                 ssh -o StrictHostKeyChecking=no root@${{ env.SERVER_IPV4 }} << 'EOF'
                   sudo apt update 
                   sudo apt upgrade -y
+
                   curl -sfL https://get.k3s.io | sh -
+
                   sudo apt install -y docker.io
                   snap install aws-cli --classic
-                  export AWS_ACCESS_KEY_ID="${{env.AWS_ACCESS_KEY_ID}}"
-                  export AWS_SECRET_ACCESS_KEY="${{env.AWS_SECRET_ACCESS_KEY}}"
+
+                  export AWS_ACCESS_KEY_ID="${{ env.AWS_ACCESS_KEY_ID }}"
+                  export AWS_SECRET_ACCESS_KEY="${{ env.AWS_SECRET_ACCESS_KEY }}"
                   export AWS_DEFAULT_REGION="us-east-1"
-                  docker login -u AWS -p $(aws ecr get-login-password) ${{env.ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com
-                  docker pull ${{env.ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:${{env.FILENAME}}
+
+                  docker login -u AWS -p $(aws ecr get-login-password) ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
+                  docker pull ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:${{ env.FILENAME }}
+
                   ACCOUNT=$(aws sts get-caller-identity --query 'Account' --output text)
                   REGION=us-east-1
                   SECRET_NAME=${REGION}-ecr-registry
@@ -138,48 +143,37 @@ jobs:
                   --docker-username=AWS \
                   --docker-password="${TOKEN}" \
                   --docker-email="${EMAIL}"
-                  cat <<EOT > deployment.yaml
-                  apiVersion: apps/v1
-                    kind: Deployment
-                    metadata:
-                      name: ml-app-deployment
-                    spec:
-                      replicas: 4
-                      selector:
-                        matchLabels:
-                          app: ml-app
-                      template:
-                        metadata:
-                          labels:
-                            app: ml-app
-                        spec:
-                          containers:
-                          - image: ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:${{ env.FILENAME }}
-                            name: ml-pod
-                          imagePullSecrets:
-                          - name: us-east-1-ecr-registry
-                  EOT
-                  cat <<EOT > metallb.yaml
-                    apiVersion: metallb.io/v1beta1
-                    kind: IPAddressPool
-                    metadata:
-                      name: ml-app-lb-pool
-                      namespace: metallb-system
-                    spec:
-                      addresses:
-                      - 192.168.86.15-192.168.86.25
-                      autoAssign: true
+                  
+                  cat /etc/rancher/k3s/k3s.yaml | base64 > kubeconfig.txt
 
-                    ---
+            - name: Retrieve kubeconfig from server
+              uses: appleboy/scp-action@master
+              with:
+                source: "root@${{ env.SERVER_IPV4 }}:/root/kubeconfig.txt"
+                target: "./kubeconfig.txt"
+              env:
+                SERVER_IPV4: ${{ env.SERVER_IPV4 }}
+                SSH_PRIVATE_KEY: ${{ env.HETZNER_SSH_KEY }}
 
-                    apiVersion: metallb.io/v1beta1
-                    kind: L2Advertisement
-                    metadata:
-                      name: ml-app-lb-pool-ad
-                      namespace: metallb-system
-                  EOT
-                  kubectl create -f deployment.yaml
-                  kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.2.1/deploy/static/provider/cloud/deploy.yaml
-                  kubectl create -f metallb.yaml
-                  kubectl expose deployment ml-app-deployment --type=LoadBalancer --name=ml-app-service --port=80 --target-port=8001
-                EOF
+            - name: Update Model State
+              id: update-model
+              env:
+                FILENAME:              ${{ env.FILENAME }}
+                MB_SECRET_TOKEN:       ${{ env.MB_SECRET_TOKEN }}
+                PROJECT_ID:            ${{ env.PROJECT_ID }}
+                MODEL_ID:              ${{ env.MODEL_ID }}
+                BACKEND_URL:           ${{ env.BACKEND_URL }}
+              run: |
+                set -e
+                echo ::add-mask::$MODEL_URL
+                echo MODEL_URL="http://${{ env.SERVER_IPV4 }}:5000" >> $GITHUB_ENV
+                curl -X PUT \
+                  -H "Content-Type: application/json"\
+                  -d '{
+                      "secretAccessToken": "${{ env.MB_SECRET_TOKEN }}",
+                      "project_id":        "${{ env.PROJECT_ID }}",
+                      "model_id":          "${{ env.MODEL_ID }}",
+                      "state":             "ACTIVE",
+                      "model_url":         "${{ env.MODEL_URL }}"
+                  }' \
+                  "${{ env.BACKEND_URL }}/api/model/update"
