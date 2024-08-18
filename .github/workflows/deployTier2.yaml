@@ -157,6 +157,7 @@ jobs:
                   --docker-password="${TOKEN}" \
                   --docker-email="${EMAIL}"
                   
+                  kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.8/config/manifests/metallb-native.yaml
                   kubectl apply  -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.2.1/deploy/static/provider/cloud/deploy.yaml
                   kubectl create -f deployments/Tier-2/kubernetes-config/metallb.yaml
                   kubectl create -f ml-app-deployment.yaml
