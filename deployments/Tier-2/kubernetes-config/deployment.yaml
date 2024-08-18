@@ -2,8 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ml-app-deployment
-  labels:
-    app: ml-app
 spec:
   replicas: 4
   selector:
@@ -15,7 +13,7 @@ spec:
         app: ml-app
     spec:
       containers:
-      - image: 206479108282.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:691421c9-9674-4d9b-bcd4-987f7c784eb3
-        name: ml-app
+      - image: ${IMAGE_URL}
+        name: ml-pod
       imagePullSecrets:
       - name: us-east-1-ecr-registry

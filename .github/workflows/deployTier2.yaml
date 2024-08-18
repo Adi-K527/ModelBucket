@@ -73,6 +73,11 @@ jobs:
             - name: Login to Amazon ECR
               id: login-ecr
               uses: aws-actions/amazon-ecr-login@62f4f872db3836360b72999f4b87f1ff13310f3a
+
+            - name: Install envsubst
+              run: sudo apt-get install -y gettext-base
+            
+            
       
             - name: Delete existing image
               id: delete-image-if-present
@@ -133,4 +138,48 @@ jobs:
                   --docker-username=AWS \
                   --docker-password="${TOKEN}" \
                   --docker-email="${EMAIL}"
+                  cat <<EOT > deployment.yaml
+                  apiVersion: apps/v1
+                    kind: Deployment
+                    metadata:
+                      name: ml-app-deployment
+                    spec:
+                      replicas: 4
+                      selector:
+                        matchLabels:
+                          app: ml-app
+                      template:
+                        metadata:
+                          labels:
+                            app: ml-app
+                        spec:
+                          containers:
+                          - image: ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:${{ env.FILENAME }}
+                            name: ml-pod
+                          imagePullSecrets:
+                          - name: us-east-1-ecr-registry
+                  EOT
+                  cat <<EOT > metallb.yaml
+                    apiVersion: metallb.io/v1beta1
+                    kind: IPAddressPool
+                    metadata:
+                      name: ml-app-lb-pool
+                      namespace: metallb-system
+                    spec:
+                      addresses:
+                      - 192.168.86.15-192.168.86.25
+                      autoAssign: true
+
+                    ---
+
+                    apiVersion: metallb.io/v1beta1
+                    kind: L2Advertisement
+                    metadata:
+                      name: ml-app-lb-pool-ad
+                      namespace: metallb-system
+                  EOT
+                  kubectl create -f deployment.yaml
+                  kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.2.1/deploy/static/provider/cloud/deploy.yaml
+                  kubectl create -f metallb.yaml
+                  kubectl expose deployment ml-app-deployment --type=LoadBalancer --name=ml-app-service --port=80 --target-port=8001
                 EOF
