@@ -1,0 +1,75 @@
+name: "Terminate Model Tier 1"
+
+on:
+  workflow_dispatch:
+    inputs:
+      model_id:
+        description: "id of the model"
+        required: true
+
+env:
+  AWS_REGION:            ${{ secrets.AWS_REGION }}
+  ECR_REPOSITORY:        ${{ secrets.ECR_REPOSITORY }}
+  ACCOUNT_ID:            ${{ secrets.ACCOUNT_ID }}
+  AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  MODEL_REQS_BUCKET:     ${{ secrets.MODEL_REQS_BUCKET }}
+  MODEL_FILES_BUCKET:    ${{ secrets.MODEL_FILES_BUCKET }}
+  BACKEND_URL:           ${{ secrets.VITE_BACKEND_URI }}
+  HETZNER_TOKEN:         ${{ secrets.HETZNER_TOKEN }}
+
+jobs:
+  deploy:
+    name: Terminate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create secret environment variables from inputs 
+        run: |
+          MODEL_ID=$(jq -r '.inputs.model_id' $GITHUB_EVENT_PATH)
+          echo ::add-mask::$MODEL_ID
+          echo MODEL_ID="$MODEL_ID" >> $GITHUB_ENV
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@0e613a0980cbf65ed5b322eb7a1e075d28913a83
+        with:
+          aws-access-key-id:     ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ${{ env.AWS_REGION }}
+    
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@62f4f872db3836360b72999f4b87f1ff13310f3a
+  
+      - name: Delete existing image
+        id: delete-image-if-present
+        run: |
+            set -e
+            echo "::add-mask::${{ env.MODEL_ID }}"
+            if aws ecr describe-images --repository-name ${{ env.ECR_REPOSITORY }} --image-ids imageTag=${{ env.MODEL_ID }} --region us-east-1 > /dev/null 2>&1; then
+                aws ecr batch-delete-image --repository-name ${{ env.ECR_REPOSITORY }} --image-ids imageTag=${{ env.MODEL_ID }} --region us-east-1 > /dev/null 2>&1
+            fi
+        
+      - name: Install Hetzner Cloud CLI
+        run: curl -L https://github.com/hetznercloud/cli/releases/download/v1.27.1/hcloud-linux-amd64.tar.gz | tar -xz && sudo mv hcloud /usr/local/bin
+
+      - name: Authenticate Hetzner Cloud CLI
+        run: hcloud context create my-project --token ${{ env.HETZNER_TOKEN }}
+
+      - name: Delete Hetzner Instance
+        run: |
+          INSTANCE_NAME="${{ env.MODEL_ID }}"
+          INSTANCE_ID=$(hcloud server list --selector name=$INSTANCE_NAME -o json | jq -r '.[0].id')
+          if [ -n "$INSTANCE_ID" ]; then
+            hcloud server delete $INSTANCE_ID
+            echo "Instance $INSTANCE_NAME (ID: $INSTANCE_ID) has been deleted."
+          else
+            echo "Instance $INSTANCE_NAME not found."
+          fi
+        
+
+
+        

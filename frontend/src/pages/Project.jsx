@@ -84,6 +84,36 @@ const Project = () => {
     }
   }
 
+  const terminateModel = async (project_id, model_id) => {
+    await fetch(import.meta.env.VITE_BACKEND_URI + "/api/model/terminate", {
+      method: "PUT",
+      credentials: "include",
+      headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+          "model_id":   model_id,
+          "project_id": project_id,
+      }),
+    });
+  }
+
+  const deleteModel = async (project_id, model_id) => {
+    await fetch(import.meta.env.VITE_BACKEND_URI + "/api/model/delete", {
+      method: "DELETE",
+      credentials: "include",
+      headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+          "model_id":   model_id,
+          "project_id": project_id,
+      }),
+    });
+  }
+
   return (
     <div>
       <h1>Project {project[0].projectname}</h1>
@@ -97,6 +127,8 @@ const Project = () => {
           <p><strong>Deployment Type:</strong> {model.deploymenttype}</p>
           <p><strong>Status:</strong> {model.state}</p>
           {model.state === "ACTIVE" && <p><strong>URL:</strong> <a href={model.model_url} target="_blank" rel="noopener noreferrer">{model.model_url}</a></p>}
+          <button onClick={(e) => {e.preventDefault(); terminateModel(id, model.id)}}>TERMINATE MODEL</button>
+          <button onClick={(e) => {e.preventDefault(); deleteModel(id, model.id)}}>DELETE MODEL</button>
         </div>
       ))}
       </ul>
@@ -124,7 +156,7 @@ const Project = () => {
                 />
                 TIER 1
               </label>
-              <label style={{ color: 'grey' }}>
+              <label>
                 <input
                   type="radio"
                   name="tier"

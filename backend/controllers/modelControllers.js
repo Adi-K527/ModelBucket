@@ -289,5 +289,110 @@ const deployModel = async (req, res) => {
     } 
 }
 
+const terminateModelWorkflow = async (workflow, model_id) => {
+    await fetch(`https://api.github.com/repos/Adi-K527/ModelBucket/actions/workflows/terminate${workflow}.yaml/dispatches`, {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/vnd.github+json',
+            'Authorization': `Bearer ${process.env.GH_TOKEN}`,
+            'X-GitHub-Api-Version': '2022-11-28',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            ref: 'main',
+            inputs: {
+                "model_id": model_id
+            }
+        })
+    })
+}
 
-export {getModels, createModel, updateModel, deployModel}
+const terminateModel = async (req, res) => {
+    try {
+        const token = req.headers.authorization.split(' ')[1]
+        const {id, username, email} = jwt.decode(token, process.env.JWT_SECRET)
+        const {project_id, model_id} = req.body
+
+        const modelIdData = await client.query(
+            "SELECT model_id, deploymenttype FROM model WHERE id = $1 AND project_id = $2", 
+            [model_id, project_id]
+        )
+
+        const modelExists = await client.query(
+            "SELECT user_id FROM users_project WHERE users_id = $1 AND project_id = $2",
+            [id, project_id]
+        )
+
+        if (modelExists.rows.length > 0) {
+            const workflow = ""
+            if (modelIdData.rows[0].deploymenttype === "TIER 1") {
+                workflow = "Tier1"
+            }
+            else {
+                workflow = "Tier2"
+            }
+
+            await terminateModelWorkflow(workflow, modelIdData.rows[0].model_id)
+
+            await client.query(
+                "UPDATE model SET state = 'STOPPED' WHERE id = $1",
+                [model_id]
+            )
+        }
+        else {
+            res.status(400).json({"Error": "Model does not exist"})
+        }
+    }
+    catch (error) {
+        res.status(400).json({"Error": error})
+    }
+}
+
+const deleteModel = async (req, res) => {
+    try {
+        const token = req.headers.authorization.split(' ')[1]
+        const {id, username, email} = jwt.decode(token, process.env.JWT_SECRET)
+        const {project_id, model_id} = req.body
+
+        const modelTypeData = await client.query(
+            "SELECT state, deploymenttype FROM model WHERE id = $1 AND project_id = $2", 
+            [model_id, project_id]
+        )
+
+        if (modelTypeData.rows[0].state === "STOPPED") {
+            await terminateModelWorkflow(modelTypeData.rows[0].deploymenttype, model_id)
+        }
+
+        const deleteFile = (bucket, folder, key) => {
+            return new Promise((resolve, reject) => {
+                const params = {
+                    Bucket: bucket,
+                    Key: `${folder}/${key}`
+                }
+        
+                s3.deleteObject(params, (err, data) => {
+                    if (err) {
+                        return reject({"error": err});
+                    }
+                    resolve(data);
+                }) 
+            })
+        }
+        
+        await deleteFile("mb-bucket-5125", "models",       id + ".joblib")
+        await deleteFile("mb-bucket-5125", "dependencies", id)
+
+        await client.query(
+            "DELETE FROM model WHERE id = $1",
+            [model_id]
+        )
+
+        res.status(200).json({"message": "Model deleted successfully"})
+    }
+    catch (error) {
+        res.status(400).json({"Error": error})
+    }
+}
+
+
+export {getModels, createModel, updateModel, deployModel, terminateModel, deleteModel}
