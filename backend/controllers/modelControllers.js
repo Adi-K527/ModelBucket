@@ -319,12 +319,13 @@ const terminateModel = async (req, res) => {
         )
 
         const modelExists = await client.query(
-            "SELECT user_id FROM users_project WHERE users_id = $1 AND project_id = $2",
+            "SELECT user_id FROM users_project WHERE user_id = $1 AND project_id = $2",
             [id, project_id]
         )
 
+        console.log(modelIdData.rows)
         if (modelExists.rows.length > 0) {
-            const workflow = ""
+            let workflow = ""
             if (modelIdData.rows[0].deploymenttype === "TIER 1") {
                 workflow = "Tier1"
             }
@@ -372,7 +373,7 @@ const deleteModel = async (req, res) => {
         
                 s3.deleteObject(params, (err, data) => {
                     if (err) {
-                        return reject({"error": err});
+                        return reject({"S3_Delete_Error": err, "creds": s3.config.credentials});
                     }
                     resolve(data);
                 }) 

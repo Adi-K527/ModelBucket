@@ -1,4 +1,4 @@
-name: "Terminate Model Tier 1"
+name: "Terminate Model Tier 2"
 
 on:
   workflow_dispatch:
