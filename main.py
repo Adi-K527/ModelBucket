@@ -2,10 +2,10 @@ import modelbucket as mb
 
 client = mb.Client(
     name  = "test",
-    token = "1d5155bbcf9167fd2b7abc1eb834ad1b4426af0fa53e5a43f38342353e166735"
+    token = "2fcab417f263981a55a7a72ffd2c58c6fbb4b51f9dc3bf9cf74e4cf602df95cc"
 )
 
 client.deploy(model_path        = "test_model.joblib",
               dependencies_path = "requirements.txt",
               proj_name         = "gfd",
-              model_name        = "newModel")
+              model_name        = "XGBoost-Test-2")

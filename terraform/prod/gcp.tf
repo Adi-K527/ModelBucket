@@ -17,6 +17,11 @@ resource "google_cloud_run_service" "cr_backend" {
       containers {
         image = "gcr.io/google-samples/hello-app:1.0"
       }
+
+      sc {
+        min_instance_count = 1  # Keep at least one instance running
+        max_instance_count = 10 # Set the maximum number of instances
+      }
     }
   }
 
@@ -25,6 +30,7 @@ resource "google_cloud_run_service" "cr_backend" {
     latest_revision = true
   }
 }
+
 
 resource "google_cloud_run_service" "cr_frontend" {
   name     = "mb-cloudrun-frontend-8326"

@@ -2,10 +2,10 @@ import modelbucket as mb
 
 client = mb.Client(
     name  = "test",
-    token = "b22a073ba0af0e2dc1252a25c6cf52daa2b4d4c84a3c3b5006ef7faa5773ff42"
+    token = "2fcab417f263981a55a7a72ffd2c58c6fbb4b51f9dc3bf9cf74e4cf602df95cc"
 )
 
 client.deploy(model_path        = "test_model.joblib",
               dependencies_path = "requirements.txt",
               proj_name         = "gfd",
-              model_name        = "TestModel")
+              model_name        = "asd")

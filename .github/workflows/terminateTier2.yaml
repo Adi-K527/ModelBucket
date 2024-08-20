@@ -53,11 +53,10 @@ jobs:
                 aws ecr batch-delete-image --repository-name ${{ env.ECR_REPOSITORY }} --image-ids imageTag=${{ env.MODEL_ID }} --region us-east-1 > /dev/null 2>&1
             fi
         
-      - name: Install Hetzner Cloud CLI
-        run: curl -L https://github.com/hetznercloud/cli/releases/download/v1.27.1/hcloud-linux-amd64.tar.gz | tar -xz && sudo mv hcloud /usr/local/bin
-
-      - name: Authenticate Hetzner Cloud CLI
-        run: hcloud context create my-project --token ${{ env.HETZNER_TOKEN }}
+      - uses: hetznercloud/setup-hcloud@v1
+      - run: hcloud server-type list
+        env:
+          HCLOUD_TOKEN: ${{ env.HETZNER_TOKEN }}
 
       - name: Delete Hetzner Instance
         run: |
