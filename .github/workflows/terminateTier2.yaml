@@ -54,20 +54,28 @@ jobs:
             fi
         
       - uses: hetznercloud/setup-hcloud@v1
-      - run: hcloud server-type list
-        env:
-          HCLOUD_TOKEN: ${{ env.HETZNER_TOKEN }}
-
-      - name: Delete Hetzner Instance
-        run: |
+      - run: |
           INSTANCE_NAME="${{ env.MODEL_ID }}"
-          INSTANCE_ID=$(hcloud server list --selector name=$INSTANCE_NAME -o json | jq -r '.[0].id')
+          INSTANCE_ID=$(hcloud server describe $INSTANCE_NAME -o json | jq -r '.id')
           if [ -n "$INSTANCE_ID" ]; then
             hcloud server delete $INSTANCE_ID
             echo "Instance $INSTANCE_NAME (ID: $INSTANCE_ID) has been deleted."
           else
             echo "Instance $INSTANCE_NAME not found."
           fi
+        env:
+          HCLOUD_TOKEN: ${{ env.HETZNER_TOKEN }}
+
+      # - name: Delete Hetzner Instance
+      #   run: |
+      #     INSTANCE_NAME="${{ env.MODEL_ID }}"
+      #     INSTANCE_ID=$(hcloud server describe $INSTANCE_NAME -o json | jq -r '.id')
+      #     if [ -n "$INSTANCE_ID" ]; then
+      #       hcloud server delete $INSTANCE_ID
+      #       echo "Instance $INSTANCE_NAME (ID: $INSTANCE_ID) has been deleted."
+      #     else
+      #       echo "Instance $INSTANCE_NAME not found."
+      #     fi
         
 
 
