@@ -323,7 +323,6 @@ const terminateModel = async (req, res) => {
             [id, project_id]
         )
 
-        console.log(modelIdData.rows)
         if (modelExists.rows.length > 0) {
             let workflow = ""
             if (modelIdData.rows[0].deploymenttype === "TIER 1") {
@@ -360,7 +359,7 @@ const deleteModel = async (req, res) => {
             [model_id, project_id]
         )
 
-        if (modelTypeData.rows[0].state === "STOPPED") {
+        if (modelTypeData.rows[0].state === "ACTIVE") {
             await terminateModelWorkflow(modelTypeData.rows[0].deploymenttype, model_id)
         }
 
@@ -383,6 +382,7 @@ const deleteModel = async (req, res) => {
         await deleteFile("mb-bucket-5125", "models",       id + ".joblib")
         await deleteFile("mb-bucket-5125", "dependencies", id)
 
+        
         await client.query(
             "DELETE FROM model WHERE id = $1",
             [model_id]

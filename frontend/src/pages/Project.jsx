@@ -96,7 +96,8 @@ const Project = () => {
           "model_id":   model_id,
           "project_id": project_id,
       }),
-    });
+    })
+    window.location.reload();
   }
 
   const deleteModel = async (project_id, model_id) => {
@@ -112,6 +113,7 @@ const Project = () => {
           "project_id": project_id,
       }),
     });
+    window.location.reload();
   }
 
   return (
