@@ -2,26 +2,26 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
-  const [loading,       setLoading]       = useState(true);
-  const [createProject, setCreateProject] = useState(0);
-  const [projectName,   setProjectName]   = useState("");
+  const [loading, setLoading] = useState(true);
+  const [createProject, setCreateProject] = useState(false);
+  const [projectName, setProjectName] = useState("");
   const [projects, setProjects] = useState([]);
-  const [token, setToken] = useState("")
-  const [apiKey, setApiKey] = useState("")
+  const [token, setToken] = useState("");
+  const [apiKey, setApiKey] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
     const getCreds = async () => {
       try {
-        const cookies = document.cookie.split(";")
-        let token = ""
+        const cookies = document.cookie.split(";");
+        let token = "";
         for (let i = 0; i < cookies.length; i++) {
           if (cookies[i].startsWith("AUTH_TOKEN")) {
-            token = cookies[i].split("=")[1]
+            token = cookies[i].split("=")[1];
           }
         }
 
-        setToken(token)
+        setToken(token);
 
         const res = await fetch(import.meta.env.VITE_BACKEND_URI + "/api/user/profile", {
           method: "GET",
@@ -35,7 +35,6 @@ const Dashboard = () => {
         if (res.status === 200) {
           const data = await res.json();
           setProjects(data.data);
-          console.log(projects)
         } else {
           navigate('/login');
         }
@@ -49,14 +48,11 @@ const Dashboard = () => {
 
     const checkCookieAndFetch = () => {
       const cookies = document.cookie.split(';').map(cookie => cookie.trim());
-
       const hasCookie = cookies.some(cookie => cookie.includes('AUTH_TOKEN'));
 
       if (hasCookie) {
-        console.log('Cookie found, fetching credentials...');
         getCreds();
       } else {
-        console.log('No cookie found, redirecting to login');
         navigate('/login');
       }
     };
@@ -67,7 +63,7 @@ const Dashboard = () => {
   const handleProjectSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(import.meta.env.VITE_BACKEND_URI + "/api/project/create", {
+      await fetch(import.meta.env.VITE_BACKEND_URI + "/api/project/create", {
         method: "POST",
         credentials: "include",
         headers: {
@@ -78,7 +74,8 @@ const Dashboard = () => {
           "projectname": projectName,
         }),
       });
-      setCreateProject(0);
+      setCreateProject(false);
+      setProjectName("");
     } catch (error) {
       console.error(error);
     }
@@ -88,9 +85,7 @@ const Dashboard = () => {
     navigate(`/project/${projectId}`);
   };
 
-  const handleGenerateKey = async (e) => {
-    e.preventDefault()
-
+  const handleGenerateKey = async () => {
     try {
       const res = await fetch(import.meta.env.VITE_BACKEND_URI + "/api/user/createKey", {
         method: "POST",
@@ -102,65 +97,71 @@ const Dashboard = () => {
         body: JSON.stringify({}),
       });
 
-      const data = await res.json()
-
-      setApiKey(data.key)
-    }
-    catch (error) {
+      const data = await res.json();
+      setApiKey(data.key);
+    } catch (error) {
       console.error(error);
     }
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="flex justify-center items-center h-screen text-xl font-semibold">Loading...</div>;
   }
 
   return (
-    <div>
-      <h1>Dashboard</h1>
-      <hr />
-      <br /><br /><br />
-      <h3>My Projects</h3>
-      <ul>
-        {projects.map((project) => (
-          <li key={project.id}>
-            <p
+    <div className="container mx-auto p-6">
+      <h1 className="text-4xl font-bold mb-8">Dashboard</h1>
+      <div className="mb-12">
+        <h3 className="text-2xl font-semibold mb-4">My Projects</h3>
+        <ul className="space-y-4">
+          {projects.map((project) => (
+            <li
+              key={project.id}
+              className="cursor-pointer text-lg font-medium text-blue-600 hover:underline"
               onClick={() => handleProjectClick(project.project_id)}
-              style={{
-                cursor: 'pointer',
-                display: 'inline',
-                margin: 0,
-                color: 'black',
-                textDecoration: 'none',
-              }}
-              onMouseOver={(e) => e.target.style.color = 'blue'}
-              onMouseOut={(e) => e.target.style.color = 'black'}
             >
               {project.projectname}
-            </p>
-          </li>
-        ))}
-      </ul>
-      <br /><br /><br />
-      <button onClick={() => setCreateProject(1)}>Create new project</button>
-      {createProject === 1 && (
-        <div>
-          <form onSubmit={handleProjectSubmit}>
-            <div>
-              <input
-                type="text"
-                placeholder="Enter project name"
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-                required
-              />
-            </div>
-            <button type="submit">Submit</button>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="space-y-6">
+        <button
+          className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+          onClick={() => setCreateProject(!createProject)}
+        >
+          {createProject ? "Cancel" : "Create new project"}
+        </button>
+        {createProject && (
+          <form onSubmit={handleProjectSubmit} className="space-y-4">
+            <input
+              type="text"
+              placeholder="Enter project name"
+              value={projectName}
+              onChange={(e) => setProjectName(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded"
+              required
+            />
+            <button
+              type="submit"
+              className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
+            >
+              Submit
+            </button>
           </form>
-        </div>
-      )}
-      <button onClick={handleGenerateKey}>Generate Key</button>
-      <p>{apiKey}</p>
+        )}
+        <button
+          className="bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-700"
+          onClick={handleGenerateKey}
+        >
+          Generate Key
+        </button>
+        {apiKey && (
+          <div className="mt-4 p-4 bg-gray-100 border border-gray-300 rounded">
+            <p className="text-sm font-mono">{apiKey}</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

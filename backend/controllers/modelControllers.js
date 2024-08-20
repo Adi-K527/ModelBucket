@@ -169,8 +169,6 @@ const tier1Deployment = async (id, secretAccessToken, project_id, model_data) =>
         })
     });
 
-    console.log(`6) - Triggered GA Workflow using params: filename=${id} secrettoken=${secretAccessToken} project_id=${project_id.rows[0].project_id} model_id=${model_data.rows[0].id}`)
-
     while (true) {
         const isPresent = await client.query(
             "SELECT state FROM model WHERE model_id = $1",
@@ -184,9 +182,7 @@ const tier1Deployment = async (id, secretAccessToken, project_id, model_data) =>
         else {
             setTimeout(() => {}, 10000)
         }
-    }
-    console.log(`7) - Done waiting for model to not be pending anymore`)
-    
+    }    
 }
 
 const tier2Deployment = async (id, secretAccessToken, project_id, model_data) => {
@@ -212,7 +208,6 @@ const tier2Deployment = async (id, secretAccessToken, project_id, model_data) =>
 
 const deployModel = async (req, res) => {
     try {
-        console.log("----------------DEPLOY MODEL LOGS-------------------")
         let {secretAccessToken, proj_name, model_name} = req.body
         let {model, dependencies} = req.files
 
@@ -222,8 +217,6 @@ const deployModel = async (req, res) => {
             [secretAccessToken]
         )
         user_id = response.rows[0].id
-
-        console.log(`1) - Authenticated user: ${user_id} using secret token`)
 
         const project_id = await client.query(
             `SELECT project_id FROM users_project
@@ -236,8 +229,6 @@ const deployModel = async (req, res) => {
             return res.status(400).json({"Error": "Unable to find model or project"})
         }
 
-        console.log(`2) - Found project: ${project_id.rows[0].project_id} belonging to user`)
-
         const model_data = await client.query(
             "SELECT id, model_id, deploymenttype FROM model WHERE modelname = $1 AND project_id = $2",
             [model_name, project_id.rows[0].project_id]
@@ -246,8 +237,6 @@ const deployModel = async (req, res) => {
         if (model_data.rows.length < 1) {
             return res.status(400).json({"Error": "Unable to find model or project"})
         }
-
-        console.log(`3) - Found model: ${model_data.rows[0].id} using secret token`)
 
         await fetch(process.env.VITE_BACKEND_URI + "/api/model/update", {
             method: "PUT",
@@ -261,8 +250,6 @@ const deployModel = async (req, res) => {
                 "state": "PENDING"
             })
         })
-
-        console.log(`4) - Updated model state to PENDING`)
 
         const id = model_data.rows[0].model_id
 
@@ -285,8 +272,6 @@ const deployModel = async (req, res) => {
 
         await uploadFile("mb-bucket-5125", "models",       id + ".joblib", model[0].buffer)
         await uploadFile("mb-bucket-5125", "dependencies", id,             dependencies[0].buffer)
-
-        console.log(`5) - Uploaded model and dependencies file to S3 bucket with filename: ${id}`)
     
         if (model_data.rows[0].deploymenttype == "TIER 1") {
             await tier1Deployment(id, secretAccessToken, project_id, model_data)
@@ -294,9 +279,6 @@ const deployModel = async (req, res) => {
         else {
             await tier2Deployment(id, secretAccessToken, project_id, model_data)
         }
-
-        console.log(`----------------MODEL DEPLOYMENT FINISHED-------------------`)
-        console.log("\n\n\n")
 
         res.status(200).json({"message": "deployment successful"})
     }
@@ -307,14 +289,7 @@ const deployModel = async (req, res) => {
 }
 
 const terminateModelWorkflow = async (workflow, model_id) => {
-    let workflowName = ""
-    if (workflow === "TIER 1") {
-        workflowName = "Tier1"
-    }
-    else {
-        workflowName = "Tier2"
-    }
-    await fetch(`https://api.github.com/repos/Adi-K527/ModelBucket/actions/workflows/terminate${workflowName}.yaml/dispatches`, {
+    await fetch(`https://api.github.com/repos/Adi-K527/ModelBucket/actions/workflows/terminate${workflow}.yaml/dispatches`, {
         method: 'POST',
         headers: {
             'Accept': 'application/vnd.github+json',
@@ -374,24 +349,25 @@ const terminateModel = async (req, res) => {
 
 const deleteModel = async (req, res) => {
     try {
-        console.log("---------------- DELETE MODEL -------------------")
         const token = req.headers.authorization.split(' ')[1]
         const {id, username, email} = jwt.decode(token, process.env.JWT_SECRET)
         const {project_id, model_id} = req.body
-
-        console.log(project_id, model_id)
 
         const modelTypeData = await client.query(
             "SELECT state, deploymenttype, model_id FROM model WHERE id = $1 AND project_id = $2", 
             [model_id, project_id]
         )
 
-        console.log(`1) - Retrieved model data: \n`)
-        console.log(modelTypeData.rows[0])
 
         if (modelTypeData.rows[0].state === "ACTIVE") {
-            console.log(`2) - Triggering termination workflow with params: ${modelTypeData.rows[0].deploymenttype}, ${modelTypeData.rows[0].model_id}`)
-            await terminateModelWorkflow(modelTypeData.rows[0].deploymenttype, modelTypeData.rows[0].model_id)
+            let workflow = ""
+            if (modelTypeData.rows[0].deploymenttype === "TIER 1") {
+                workflow = "Tier1"
+            }
+            else {
+                workflow = "Tier2"
+            }
+            await terminateModelWorkflow(workflow, modelTypeData.rows[0].model_id)
         }
 
         await s3.deleteObject({Bucket: "mb-bucket-5125", Key: `models/${modelTypeData.rows[0].model_id}.joblib`}).promise()
