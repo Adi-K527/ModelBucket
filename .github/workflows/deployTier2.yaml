@@ -98,8 +98,8 @@ jobs:
                 S3_KEY_REQ: ${{ env.FILENAME }}
               run: |
                 echo "::add-mask::${{ env.IMAGE_TAG }}"
-                docker build --build-arg AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --build-arg AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY --build-arg AWS_DEFAULT_REGION=$AWS_REGION --build-arg S3_BUCKET=$S3_BUCKET --build-arg FILENAME=${{env.FILENAME}} --build-arg SERVICE=run_inference.py -t $ECR_REGISTRY/$ECR_REPOSITORY:${{env.IMAGE_TAG}}-inference ./deployments/Tier-2
-                docker build --build-arg AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --build-arg AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY --build-arg AWS_DEFAULT_REGION=$AWS_REGION --build-arg S3_BUCKET=$S3_BUCKET --build-arg FILENAME=${{env.FILENAME}} --build-arg SERVICE=run_inference.py -t $ECR_REGISTRY/$ECR_REPOSITORY:${{env.IMAGE_TAG}}-retrain ./deployments/Tier-2
+                docker build --build-arg AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --build-arg AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY --build-arg AWS_DEFAULT_REGION=$AWS_REGION --build-arg S3_BUCKET=$S3_BUCKET --build-arg FILENAME=${{env.FILENAME}} --build-arg SERVICE=inference -t $ECR_REGISTRY/$ECR_REPOSITORY:${{env.IMAGE_TAG}}-inference ./deployments/Tier-2
+                docker build --build-arg AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --build-arg AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY --build-arg AWS_DEFAULT_REGION=$AWS_REGION --build-arg S3_BUCKET=$S3_BUCKET --build-arg FILENAME=${{env.FILENAME}} --build-arg SERVICE=retrain -t $ECR_REGISTRY/$ECR_REPOSITORY:${{env.IMAGE_TAG}}-retrain ./deployments/Tier-2
                 docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{env.IMAGE_TAG}}-inference
                 echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:${{env.IMAGE_TAG}}-inference" >> $GITHUB_OUTPUT
                 docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{env.IMAGE_TAG}}-retrain
