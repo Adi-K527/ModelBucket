@@ -193,6 +193,6 @@ jobs:
                       "project_id":        "${{ env.PROJECT_ID }}",
                       "model_id":          "${{ env.MODEL_ID }}",
                       "state":             "ACTIVE",
-                      "model_url":         "http://${{ env.SERVER_IPV4 }}:5000"
+                      "model_url":         "http://${{ env.SERVER_IPV4 }}/predict"
                   }' \
                   "${{ env.BACKEND_URL }}/api/model/update"

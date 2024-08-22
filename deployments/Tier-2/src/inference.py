@@ -26,9 +26,9 @@ def predict(request: BatchData):
     
     try:
         model_name = os.getenv("MODEL_NAME")
-        bucket.download_file("models/" + model_name + ".joblib", "/var/model/model.joblib")
+        bucket.download_file("models/" + model_name + ".joblib", "model.joblib")
         
-        model = joblib.load('/var/model/model.joblib')
+        model = joblib.load('model.joblib')
         prediction = model.predict([request.data])
 
     except Exception as e:
