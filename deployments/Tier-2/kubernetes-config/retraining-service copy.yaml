@@ -7,6 +7,6 @@ spec:
     app: retrain-app
   ports:
     - protocol: TCP
-      port: 8000
+      port: 7000
       targetPort: 8000
   type: LoadBalancer
