@@ -8,7 +8,7 @@ spec:
   rules:
   - http:
       paths:
-      - path: /inference
+      - path: /predict
         pathType: Prefix
         backend:
           service:
