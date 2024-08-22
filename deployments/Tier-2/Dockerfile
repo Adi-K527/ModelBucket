@@ -9,7 +9,7 @@ ARG S3_BUCKET
 ARG FILENAME
 ARG SERVICE
 
-RUN aws s3 cp s3://${S3_BUCKET}/dependencies/${FILENAME} requirements.txt
+RUN aws s3 cp s3://${S3_BUCKET}/${FILENAME} requirements.txt
 RUN pip install -r requirements.txt 
 
 COPY src/ /app/
