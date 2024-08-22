@@ -109,56 +109,60 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-4xl font-bold mb-8">Dashboard</h1>
+    <div className="max-w-7xl mx-auto p-8">
+      <h1 className="text-4xl font-bold mb-8 text-gray-800">Dashboard</h1>
       <div className="mb-12">
-        <h3 className="text-2xl font-semibold mb-4">My Projects</h3>
-        <ul className="space-y-4">
-          {projects.map((project) => (
-            <li
-              key={project.id}
-              className="cursor-pointer text-lg font-medium text-blue-600 hover:underline"
-              onClick={() => handleProjectClick(project.project_id)}
-            >
-              {project.projectname}
-            </li>
-          ))}
-        </ul>
+        <h3 className="text-2xl font-semibold mb-4 text-gray-700">My Projects</h3>
+        {projects.length === 0 ? (
+          <p className="text-gray-500">You don't have any projects yet. Start by creating a new project.</p>
+        ) : (
+          <ul className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {projects.map((project) => (
+              <li
+                key={project.id}
+                className="cursor-pointer bg-white shadow-sm rounded-lg p-4 transition duration-300 hover:shadow-md hover:bg-blue-50"
+                onClick={() => handleProjectClick(project.project_id)}
+              >
+                <div className="text-lg font-medium text-blue-600">{project.projectname}</div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
       <div className="space-y-6">
         <button
-          className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+          className="bg-blue-600 text-white py-2 px-4 rounded-md transition duration-300 hover:bg-blue-700"
           onClick={() => setCreateProject(!createProject)}
         >
-          {createProject ? "Cancel" : "Create new project"}
+          {createProject ? "Cancel" : "Create New Project"}
         </button>
         {createProject && (
-          <form onSubmit={handleProjectSubmit} className="space-y-4">
+          <form onSubmit={handleProjectSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow-md">
             <input
               type="text"
               placeholder="Enter project name"
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded"
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
               required
             />
             <button
               type="submit"
-              className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
+              className="bg-green-600 text-white py-2 px-4 rounded-md transition duration-300 hover:bg-green-700"
             >
               Submit
             </button>
           </form>
         )}
         <button
-          className="bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-700"
+          className="bg-gray-600 text-white py-2 px-4 rounded-md transition duration-300 hover:bg-gray-700"
           onClick={handleGenerateKey}
         >
-          Generate Key
+          Generate API Key
         </button>
         {apiKey && (
-          <div className="mt-4 p-4 bg-gray-100 border border-gray-300 rounded">
-            <p className="text-sm font-mono">{apiKey}</p>
+          <div className="mt-4 p-4 bg-gray-50 border border-gray-300 rounded-lg">
+            <p className="text-sm font-mono text-gray-800">{apiKey}</p>
           </div>
         )}
       </div>

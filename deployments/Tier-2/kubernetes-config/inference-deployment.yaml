@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ml-app-deployment
+  name: inference-app-deployment
 spec:
   replicas: 4
   selector:
     matchLabels:
-      app: ml-app
+      app: inference-app
   template:
     metadata:
       labels:
-        app: ml-app
+        app: inference-app
     spec:
       containers:
       - image: ${IMAGE_URL}
-        name: ml-pod
+        name: inference-pod
       imagePullSecrets:
       - name: us-east-1-ecr-registry

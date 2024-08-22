@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ml-app-ingress
+  annotations:
+    traefik.ingress.kubernetes.io/rule-type: "PathPrefixStrip"
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /inference
+        pathType: Prefix
+        backend:
+          service:
+            name: inference-service
+            port:
+              number: 8000
+
+      - path: /retrain
+        pathType: Prefix
+        backend:
+          service:
+            name: retrain-service
+            port:
+              number: 7000

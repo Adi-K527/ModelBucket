@@ -98,9 +98,12 @@ jobs:
                 S3_KEY_REQ: ${{ env.FILENAME }}
               run: |
                 echo "::add-mask::${{ env.IMAGE_TAG }}"
-                docker build --build-arg AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --build-arg AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY --build-arg AWS_DEFAULT_REGION=$AWS_REGION --build-arg S3_BUCKET=$S3_BUCKET --build-arg S3_KEY_REQ=$S3_KEY_REQ -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./deployments/Tier-2
-                docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-                echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+                docker build --build-arg AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --build-arg AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY --build-arg AWS_DEFAULT_REGION=$AWS_REGION --build-arg S3_BUCKET=$S3_BUCKET --build-arg FILENAME=${{env.FILENAME}} --build-arg SERVICE=run_inference.py -t $ECR_REGISTRY/$ECR_REPOSITORY:${{env.IMAGE_TAG}}-inference ./deployments/Tier-2
+                docker build --build-arg AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --build-arg AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY --build-arg AWS_DEFAULT_REGION=$AWS_REGION --build-arg S3_BUCKET=$S3_BUCKET --build-arg FILENAME=${{env.FILENAME}} --build-arg SERVICE=run_inference.py -t $ECR_REGISTRY/$ECR_REPOSITORY:${{env.IMAGE_TAG}}-retrain ./deployments/Tier-2
+                docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{env.IMAGE_TAG}}-inference
+                echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:${{env.IMAGE_TAG}}-inference" >> $GITHUB_OUTPUT
+                docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{env.IMAGE_TAG}}-retrain
+                echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:${{env.IMAGE_TAG}}-retrain" >> $GITHUB_OUTPUT
 
             - uses: TimDaub/hetzner-cloud-deploy-server-action@v2
               with:
@@ -125,8 +128,11 @@ jobs:
                 ssh-private-key: ${{ env.HETZNER_SSH_KEY }}
             - run: |
                 ssh -o StrictHostKeyChecking=no root@${{ env.SERVER_IPV4 }} << 'EOF'
-                  imageurl='${{env.ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:${{env.FILENAME}}'
-                  sed "s|\${IMAGE_URL}|$imageurl|g" deployments/Tier-2/kubernetes-config/deployment.yaml > ml-app-deployment.yaml
+                  imageurl='${{env.ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:${{env.FILENAME}}-inference'
+                  sed "s|\${IMAGE_URL}|$imageurl|g" deployments/Tier-2/kubernetes-config/inference-deployment.yaml > inference-deployment.yaml
+
+                  imageurl='${{env.ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:${{env.FILENAME}}-retrain'
+                  sed "s|\${IMAGE_URL}|$imageurl|g" deployments/Tier-2/kubernetes-config/retraining-deployment.yaml > retraining-deployment.yaml
 
                   sudo apt update 
                   sudo apt upgrade -y
@@ -160,8 +166,11 @@ jobs:
                   kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.8/config/manifests/metallb-native.yaml
                   kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.2.1/deploy/static/provider/cloud/deploy.yaml
                   kubectl apply -f deployments/Tier-2/kubernetes-config/metallb.yaml
-                  kubectl create -f ml-app-deployment.yaml
-                  kubectl expose deployment ml-app-deployment --type=LoadBalancer --name=ml-app-service --port=5000 --target-port=8001
+                  kubectl create -f inference-deployment.yaml
+                  kubectl create -f retraining-deployment.yaml
+                  kubectl create -f inference-service.yaml
+                  kubectl create -f retraining-service.yaml
+                  kubectl create -f ingress.yaml
 
             - name: Update Model State
               id: update-model

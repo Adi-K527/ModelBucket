@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: retrain-app-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: retrain-app
+  template:
+    metadata:
+      labels:
+        app: retrain-app
+    spec:
+      containers:
+      - image: ${IMAGE_URL}
+        name: retrain-pod
+      imagePullSecrets:
+      - name: us-east-1-ecr-registry

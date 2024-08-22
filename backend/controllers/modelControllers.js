@@ -358,7 +358,6 @@ const deleteModel = async (req, res) => {
             [model_id, project_id]
         )
 
-
         if (modelTypeData.rows[0].state === "ACTIVE") {
             let workflow = ""
             if (modelTypeData.rows[0].deploymenttype === "TIER 1") {
@@ -384,6 +383,5 @@ const deleteModel = async (req, res) => {
         res.status(400).json({"Error": error})
     }
 }
-
 
 export {getModels, createModel, updateModel, deployModel, terminateModel, deleteModel}
