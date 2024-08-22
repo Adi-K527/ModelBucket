@@ -147,7 +147,8 @@ jobs:
                   export AWS_DEFAULT_REGION="us-east-1"
 
                   docker login -u AWS -p $(aws ecr get-login-password) ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
-                  docker pull ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:${{ env.FILENAME }}
+                  docker pull ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:${{ env.FILENAME }}-inference
+                  docker pull ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:${{ env.FILENAME }}-retrain
 
                   cat /etc/rancher/k3s/k3s.yaml | base64 > kubeconfig.txt
 
