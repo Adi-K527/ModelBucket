@@ -169,9 +169,9 @@ jobs:
                   kubectl apply -f deployments/Tier-2/kubernetes-config/metallb.yaml
                   kubectl create -f inference-deployment.yaml
                   kubectl create -f retraining-deployment.yaml
-                  kubectl create -f inference-service.yaml
-                  kubectl create -f retraining-service.yaml
-                  kubectl create -f ingress.yaml
+                  kubectl create -f deployments/Tier-2/kubernetes-config/inference-service.yaml
+                  kubectl create -f deployments/Tier-2/kubernetes-config/retraining-service.yaml
+                  kubectl create -f deployments/Tier-2/kubernetes-config/ingress.yaml
 
             - name: Update Model State
               id: update-model
