@@ -16,6 +16,7 @@ class BatchData(BaseModel):
 def status():
     return {"status": "inference ok"}
 
+
 @app.post("/predict")
 def predict(request: BatchData):
     
