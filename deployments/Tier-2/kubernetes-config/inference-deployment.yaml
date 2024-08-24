@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: inference-app-deployment
+  name: inference-deployment
 spec:
   replicas: 4
   selector:
@@ -15,5 +15,13 @@ spec:
       containers:
       - image: ${IMAGE_URL}
         name: inference-pod
+        imagePullPolicy: Always
+        volumeMounts:
+        - mountPath: /vol
+          name: model-volume-claim
       imagePullSecrets:
       - name: us-east-1-ecr-registry
+      volumes:
+        - name: model-volume-claim
+          persistentVolumeClaim:
+            claimName: model-volume-claim
