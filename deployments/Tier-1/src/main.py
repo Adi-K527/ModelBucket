@@ -22,10 +22,6 @@ def status():
 @app.post("/predict")
 def predict(request: BatchData):
 
-    def np_encoder(object):
-        if isinstance(object, np.generic):
-            return object.item()
-        
     bucket = boto3.resource('s3', 
                             aws_access_key_id     = os.getenv('MY_AWS_ACCESS_THING'), 
                             aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS' )).Bucket(os.getenv('AWS_BUCKET'))
@@ -46,7 +42,7 @@ def predict(request: BatchData):
 
     return {
         'statusCode': 200,
-        'body': json.dumps({"prediction": prediction}, default=np_encoder)
+        'body': json.dumps({"prediction": list(prediction)})
     }
 
 handler = Mangum(app)

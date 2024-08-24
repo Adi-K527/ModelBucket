@@ -5,6 +5,7 @@ import joblib
 from pydantic import BaseModel
 from typing import Any
 from fastapi import FastAPI
+import numpy as np
 
 app = FastAPI()
 
@@ -29,7 +30,7 @@ def predict(request: BatchData):
         bucket.download_file("models/" + model_name + ".joblib", "model.joblib")
         
         model = joblib.load('model.joblib')
-        prediction = model.predict([request.data])
+        prediction = model.predict(np.array([request.data]))
 
     except Exception as e:
         return {
@@ -40,5 +41,5 @@ def predict(request: BatchData):
 
     return {
         'statusCode': 200,
-        'body': json.dumps({"prediction": prediction})
+        'body': json.dumps({"prediction": list(prediction)})
     }
