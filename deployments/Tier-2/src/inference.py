@@ -30,8 +30,18 @@ def predict(request: BatchData):
         if not os.path.exists("/vol/model.joblib"):
             bucket.download_file("models/" + model_name + ".joblib", "/vol/model.joblib")
         
+        preprocessor = None
+        if len([i for i in bucket.objects.filter(Prefix='preprocessors/' + model_name + "-preprocessor")]) == 1:
+            if not os.path.exists("/vol/preprocessor.joblib"):
+                bucket.download_file("preprocessors/" + model_name + "-preprocessor", "/vol/preprocessor.joblib")
+            preprocessor = joblib.load('/vol/preprocessor.joblib')
+
+        data = np.array([request.data])
+        if preprocessor:
+            data = preprocessor.transform(data)
+        
         model = joblib.load('/vol/model.joblib')
-        prediction = model.predict(np.array([request.data]))
+        prediction = model.predict(data)
 
     except Exception as e:
         return {

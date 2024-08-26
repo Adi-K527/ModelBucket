@@ -12,6 +12,11 @@ resource "aws_s3_object" "dependencies_folder" {
     key = "dependencies/"
 }
 
+resource "aws_s3_object" "preprocessors_folder" {
+    bucket = aws_s3_bucket.mb_bucket.id
+    key = "preprocessors/"
+}
+
 resource "aws_ecr_repository" "mb_ecr_repo" {
   name = "model_bucket_ecr"
 }
