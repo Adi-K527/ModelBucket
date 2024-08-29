@@ -105,16 +105,16 @@ jobs:
                 docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{env.IMAGE_TAG}}-retrain
                 echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:${{env.IMAGE_TAG}}-retrain" >> $GITHUB_OUTPUT
 
-            - name: Check if server is present
-              id: server-present
-              env:
-                FILENAME: ${{env.FILENAME}}
-              run: |
+            - uses: hetznercloud/setup-hcloud@v1
+            - run: |
                 if hcloud server describe $FILENAME; then
                   echo SERVER="true" >> $GITHUB_ENV
                 else
                   echo SERVER="false" >> $GITHUB_ENV
                 fi
+              env:
+                FILENAME:     ${{ env.FILENAME }}
+                HCLOUD_TOKEN: ${{ env.HETZNER_TOKEN }}
 
             - uses: TimDaub/hetzner-cloud-deploy-server-action@v2
               if:   env.SERVER == 'false'
