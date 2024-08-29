@@ -146,7 +146,7 @@ jobs:
                   imageurl='${{env.ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:${{env.FILENAME}}-retrain'
                   sed "s|\${IMAGE_URL}|$imageurl|g" deployments/Tier-2/kubernetes-config/retraining-deployment.yaml > retraining-deployment.yaml
 
-                  if [ "${{env.SERVER}}" == "true" ]; then
+                  if [ "${{env.SERVER}}" == "false" ]; then
                     sudo apt update 
                     sudo apt upgrade -y
 
