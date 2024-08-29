@@ -110,7 +110,7 @@ jobs:
               env:
                 FILENAME: ${{env.FILENAME}}
               run: |
-                if hcloud server describe $FILENAME > /dev/null 2>&1; then
+                if hcloud server describe $FILENAME; then
                   echo SERVER="true" >> $GITHUB_ENV
                 else
                   echo SERVER="false" >> $GITHUB_ENV
