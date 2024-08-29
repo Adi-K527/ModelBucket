@@ -117,7 +117,7 @@ jobs:
                 fi
 
             - uses: TimDaub/hetzner-cloud-deploy-server-action@v2
-              if:   env.SERVER == 'true'
+              if:   env.SERVER == 'false'
               with:
                 server-name: ${{ env.FILENAME }}
                 server-image: "ubuntu-20.04"
@@ -146,49 +146,54 @@ jobs:
                   imageurl='${{env.ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:${{env.FILENAME}}-retrain'
                   sed "s|\${IMAGE_URL}|$imageurl|g" deployments/Tier-2/kubernetes-config/retraining-deployment.yaml > retraining-deployment.yaml
 
-                  sudo apt update 
-                  sudo apt upgrade -y
+                  if [ "${{env.SERVER}}" == "true" ]; then
+                    sudo apt update 
+                    sudo apt upgrade -y
 
-                  curl -sfL https://get.k3s.io | sh -
+                    curl -sfL https://get.k3s.io | sh -
 
-                  sudo apt install -y docker.io
-                  snap install aws-cli --classic
+                    sudo apt install -y docker.io
+                    snap install aws-cli --classic
 
-                  export AWS_ACCESS_KEY_ID="${{ env.AWS_ACCESS_KEY_ID }}"
-                  export AWS_SECRET_ACCESS_KEY="${{ env.AWS_SECRET_ACCESS_KEY }}"
-                  export AWS_DEFAULT_REGION="us-east-1"
+                    export AWS_ACCESS_KEY_ID="${{ env.AWS_ACCESS_KEY_ID }}"
+                    export AWS_SECRET_ACCESS_KEY="${{ env.AWS_SECRET_ACCESS_KEY }}"
+                    export AWS_DEFAULT_REGION="us-east-1"
 
-                  docker login -u AWS -p $(aws ecr get-login-password) ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
-                  docker pull ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:${{ env.FILENAME }}-inference
-                  docker pull ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:${{ env.FILENAME }}-retrain
+                    docker login -u AWS -p $(aws ecr get-login-password) ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
+                    docker pull ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:${{ env.FILENAME }}-inference
+                    docker pull ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:${{ env.FILENAME }}-retrain
 
-                  cat /etc/rancher/k3s/k3s.yaml | base64 > kubeconfig.txt
+                    cat /etc/rancher/k3s/k3s.yaml | base64 > kubeconfig.txt
 
-                  ACCOUNT=$(aws sts get-caller-identity --query 'Account' --output text)
-                  REGION=us-east-1
-                  SECRET_NAME=${REGION}-ecr-registry
-                  EMAIL=abc@xyz.com
-                  TOKEN=`aws ecr --region=$REGION get-authorization-token --output text --query authorizationData[].authorizationToken | base64 -d | cut -d: -f2`
-                  kubectl delete secret --ignore-not-found $SECRET_NAME
-                  kubectl create secret docker-registry $SECRET_NAME \
-                  --docker-server=https://$ACCOUNT.dkr.ecr.${REGION}.amazonaws.com \
-                  --docker-username=AWS \
-                  --docker-password="${TOKEN}" \
-                  --docker-email="${EMAIL}"
-                  
-                  kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.8/config/manifests/metallb-native.yaml
-                  kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.2.1/deploy/static/provider/cloud/deploy.yaml
-                  kubectl apply -f deployments/Tier-2/kubernetes-config/metallb.yaml
-                  kubectl apply -f deployments/Tier-2/kubernetes-config/ModelVolume.yaml
-                  kubectl apply -f deployments/Tier-2/kubernetes-config/ModelVolumeClaim.yaml
-                  kubectl create -f inference-deployment.yaml
-                  kubectl create -f retraining-deployment.yaml
-                  kubectl create -f deployments/Tier-2/kubernetes-config/inference-service.yaml
-                  kubectl create -f deployments/Tier-2/kubernetes-config/retraining-service.yaml
-                  sleep 30
-                  kubectl apply -f deployments/Tier-2/kubernetes-config/ingress.yaml
-                  sleep 10
-                  kubectl apply -f deployments/Tier-2/kubernetes-config/ingress.yaml
+                    ACCOUNT=$(aws sts get-caller-identity --query 'Account' --output text)
+                    REGION=us-east-1
+                    SECRET_NAME=${REGION}-ecr-registry
+                    EMAIL=abc@xyz.com
+                    TOKEN=`aws ecr --region=$REGION get-authorization-token --output text --query authorizationData[].authorizationToken | base64 -d | cut -d: -f2`
+                    kubectl delete secret --ignore-not-found $SECRET_NAME
+                    kubectl create secret docker-registry $SECRET_NAME \
+                    --docker-server=https://$ACCOUNT.dkr.ecr.${REGION}.amazonaws.com \
+                    --docker-username=AWS \
+                    --docker-password="${TOKEN}" \
+                    --docker-email="${EMAIL}"
+                    
+                    kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.8/config/manifests/metallb-native.yaml
+                    kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.2.1/deploy/static/provider/cloud/deploy.yaml
+                    kubectl apply -f deployments/Tier-2/kubernetes-config/metallb.yaml
+                    kubectl apply -f deployments/Tier-2/kubernetes-config/ModelVolume.yaml
+                    kubectl apply -f deployments/Tier-2/kubernetes-config/ModelVolumeClaim.yaml
+                    kubectl create -f inference-deployment.yaml
+                    kubectl create -f retraining-deployment.yaml
+                    kubectl create -f deployments/Tier-2/kubernetes-config/inference-service.yaml
+                    kubectl create -f deployments/Tier-2/kubernetes-config/retraining-service.yaml
+                    sleep 30
+                    kubectl apply -f deployments/Tier-2/kubernetes-config/ingress.yaml
+                    sleep 10
+                    kubectl apply -f deployments/Tier-2/kubernetes-config/ingress.yaml
+                  else
+                    kubectl apply -f inference-deployment.yaml
+                    kubectl apply -f retraining-deployment.yaml
+                  fi
 
             - name: Update Model State
               id: update-model
