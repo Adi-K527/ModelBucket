@@ -3,7 +3,7 @@ name: "Set up cloud resources"
 on:
     push:
       branches:
-        - main
+        - mainsdf
 
 env:
   GOOGLE_CREDENTIALS:    ${{ secrets.GOOGLE_CREDENTIALS }}
