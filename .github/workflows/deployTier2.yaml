@@ -76,16 +76,41 @@ jobs:
 
             - name: Install envsubst
               run: sudo apt-get install -y gettext-base
-            
+
+            - uses: hetznercloud/setup-hcloud@v1
+            - run: |
+                if hcloud server describe $FILENAME > /dev/null 2>&1; then
+                  echo SERVER="true" >> $GITHUB_ENV
+                else
+                  echo SERVER="false" >> $GITHUB_ENV
+                fi
+              env:
+                FILENAME:     ${{ env.FILENAME }}
+                HCLOUD_TOKEN: ${{ env.HETZNER_TOKEN }}
+
+
+            - uses: hetznercloud/setup-hcloud@v1
+            - run: |
+                if [ "$SERVER" = "false" ]; then
+                  hcloud server create --name $FILENAME --image "ubuntu-20.04" --type "cx22" --ssh-key "hetzner_key"
+                  echo "Instance has been created."
+                fi
+              env:
+                HCLOUD_TOKEN: ${{ env.HETZNER_TOKEN }}
+                SERVER: ${{ env.SERVER }}
+                FILENAME: ${{ env.FILENAME }}
+
+                
             - name: Delete existing image
               id: delete-image-if-present
               run: |
                 set -e
                 echo "::add-mask::${{ env.FILENAME }}"
-                if aws ecr describe-images --repository-name ${{ env.ECR_REPOSITORY }} --image-ids imageTag=${{ env.FILENAME }} --region us-east-1 > /dev/null 2>&1; then
-                  aws ecr batch-delete-image --repository-name ${{ env.ECR_REPOSITORY }} --image-ids imageTag=${{ env.FILENAME }} --region us-east-1 > /dev/null 2>&1
+                if aws ecr describe-images --repository-name ${{ env.ECR_REPOSITORY }} --image-ids imageTag=${{ env.FILENAME }}-retrain --region us-east-1 > /dev/null 2>&1; then
+                  aws ecr batch-delete-image --repository-name ${{ env.ECR_REPOSITORY }} --image-ids imageTag=${{ env.FILENAME }}-retrain --region us-east-1 > /dev/null 2>&1
+                  aws ecr batch-delete-image --repository-name ${{ env.ECR_REPOSITORY }} --image-ids imageTag=${{ env.FILENAME }}-inference --region us-east-1 > /dev/null 2>&1
                 fi
-                
+                  
             - name: Build, tag, and push image to Amazon ECR
               id: build-image
               env:
@@ -104,27 +129,6 @@ jobs:
                 echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:${{env.IMAGE_TAG}}-inference" >> $GITHUB_OUTPUT
                 docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{env.IMAGE_TAG}}-retrain
                 echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:${{env.IMAGE_TAG}}-retrain" >> $GITHUB_OUTPUT
-
-            - uses: hetznercloud/setup-hcloud@v1
-            - run: |
-                if hcloud server describe $FILENAME; then
-                  echo SERVER="true" >> $GITHUB_ENV
-                else
-                  echo SERVER="false" >> $GITHUB_ENV
-                fi
-              env:
-                FILENAME:     ${{ env.FILENAME }}
-                HCLOUD_TOKEN: ${{ env.HETZNER_TOKEN }}
-
-            - uses: TimDaub/hetzner-cloud-deploy-server-action@v2
-              if: ${{ env.SERVER == false }}
-              with:
-                server-name: ${{ env.FILENAME }}
-                server-image: "ubuntu-20.04"
-                server-type: "cx22"
-                ssh-key-name: "hetzner_key"
-                hcloud-token: ${{ secrets.HETZNER_TOKEN }}
-                delete-server: false
 
             - name: Retrieve kubeconfig from server
               uses: appleboy/scp-action@master
