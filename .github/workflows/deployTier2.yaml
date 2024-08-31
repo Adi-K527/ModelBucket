@@ -214,6 +214,24 @@ jobs:
                     sleep 10
                     kubectl apply -f deployments/Tier-2/kubernetes-config/ingress.yaml
                   else
+                    docker login -u AWS -p $(aws ecr get-login-password) ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
+                    docker pull ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:${{ env.FILENAME }}-inference
+                    docker pull ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:${{ env.FILENAME }}-retrain
+
+                    cat /etc/rancher/k3s/k3s.yaml | base64 > kubeconfig.txt
+
+                    ACCOUNT=$(aws sts get-caller-identity --query 'Account' --output text)
+                    REGION=us-east-1
+                    SECRET_NAME=${REGION}-ecr-registry
+                    EMAIL=abc@xyz.com
+                    TOKEN=`aws ecr --region=$REGION get-authorization-token --output text --query authorizationData[].authorizationToken | base64 -d | cut -d: -f2`
+                    kubectl delete secret --ignore-not-found $SECRET_NAME
+                    kubectl create secret docker-registry $SECRET_NAME \
+                    --docker-server=https://$ACCOUNT.dkr.ecr.${REGION}.amazonaws.com \
+                    --docker-username=AWS \
+                    --docker-password="${TOKEN}" \
+                    --docker-email="${EMAIL}"
+
                     [ -e /vol/model.joblib ] && rm /vol/model.joblib
                     [ -e /vol/preprocessor.joblib ] && rm /vol/preprocessor.joblib
                     kubectl delete deployment inference-deployment
