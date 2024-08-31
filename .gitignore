@@ -8,3 +8,4 @@ terraform/lambda_deployment/.terraform
 terraform/prod/.terraform
 terraform/prod/.terraform.lock.hcl
 terraform/lambda_deployment/.terraform.lock.hcl
+test.py

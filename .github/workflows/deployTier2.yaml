@@ -214,6 +214,8 @@ jobs:
                     sleep 10
                     kubectl apply -f deployments/Tier-2/kubernetes-config/ingress.yaml
                   else
+                    [ -e /vol/model.joblib ] && rm /vol/model.joblib
+                    [ -e /vol/preprocessor.joblib ] && rm /vol/preprocessor.joblib
                     kubectl apply -f inference-deployment.yaml
                     kubectl apply -f retraining-deployment.yaml
                   fi
