@@ -214,6 +214,10 @@ jobs:
                     sleep 10
                     kubectl apply -f deployments/Tier-2/kubernetes-config/ingress.yaml
                   else
+                    export AWS_ACCESS_KEY_ID="${{ env.AWS_ACCESS_KEY_ID }}"
+                    export AWS_SECRET_ACCESS_KEY="${{ env.AWS_SECRET_ACCESS_KEY }}"
+                    export AWS_DEFAULT_REGION="us-east-1"
+
                     docker login -u AWS -p $(aws ecr get-login-password) ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
                     docker pull ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:${{ env.FILENAME }}-inference
                     docker pull ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:${{ env.FILENAME }}-retrain
