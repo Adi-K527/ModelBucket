@@ -217,7 +217,7 @@ jobs:
                     [ -e /vol/model.joblib ] && rm /vol/model.joblib
                     [ -e /vol/preprocessor.joblib ] && rm /vol/preprocessor.joblib
                     kubectl delete deployment inference-deployment
-                    kubectl delete deployment retraining-deployment
+                    kubectl delete deployment retrain-app-deployment
                     kubectl create -f inference-deployment.yaml
                     kubectl create -f retraining-deployment.yaml
                   fi
