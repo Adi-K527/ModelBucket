@@ -43,6 +43,8 @@ def predict(request: BatchData):
         model = joblib.load('/vol/model.joblib')
         prediction = model.predict(data)
 
+        thing = [item for item in os.listdir("/vol")]
+
     except Exception as e:
         return {
             "statusCode": 400,
@@ -52,5 +54,5 @@ def predict(request: BatchData):
 
     return {
         'statusCode': 200,
-        'body': json.dumps({"prediction": list(prediction)})
+        'body': json.dumps({"prediction": list(prediction), "newthing": "im new", "thing": list(thing)})
     }
