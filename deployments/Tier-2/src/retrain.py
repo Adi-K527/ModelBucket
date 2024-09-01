@@ -57,7 +57,7 @@ def predict(request: BatchData):
         y_true = np.array([request.y_test])
         
         metrics = {}
-        if request.model_type == "Classification":
+        if request.model_type != "Classification":
             metrics["mse"]      = mean_squared_error(pred, y_true)
             metrics["rmse"]     = np.sqrt(mean_squared_error(pred, y_true))
             metrics["r2_score"] = r2_score(pred, y_true)

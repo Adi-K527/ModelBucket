@@ -16,5 +16,12 @@ spec:
       - image: ${IMAGE_URL}
         name: retrain-pod
         imagePullPolicy: Always
+        volumeMounts:
+        - mountPath: /vol
+          name: retrain-volume-claim
       imagePullSecrets:
       - name: us-east-1-ecr-registry
+      volumes:
+        - name: retrain-volume-claim
+          persistentVolumeClaim:
+            claimName: model-volume-claim
