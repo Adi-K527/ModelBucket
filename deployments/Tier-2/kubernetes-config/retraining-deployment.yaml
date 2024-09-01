@@ -15,5 +15,6 @@ spec:
       containers:
       - image: ${IMAGE_URL}
         name: retrain-pod
+        imagePullPolicy: Always
       imagePullSecrets:
       - name: us-east-1-ecr-registry
