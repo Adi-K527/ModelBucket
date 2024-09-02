@@ -34,18 +34,25 @@ def predict(request: BatchData):
         if not os.path.exists("/vol/model.joblib"):
             bucket.download_file("models/" + model_name + ".joblib", "/vol/model.joblib")
 
+        if not os.path.exists("/vol/X_eval.csv"):
+            bucket.download_file("eval-data/" + model_name + "-x-eval", "/vol/X_eval.csv")
+            bucket.download_file("eval-data/" + model_name + "-y-eval", "/vol/Y_eval.csv")
+
         preprocessor = None
         if len([i for i in bucket.objects.filter(Prefix='preprocessors/' + model_name + "-preprocessor")]) == 1:
             if not os.path.exists("/vol/preprocessor.joblib"):
                 bucket.download_file("preprocessors/" + model_name + "-preprocessor", "/vol/preprocessor.joblib")
             preprocessor = joblib.load('/vol/preprocessor.joblib')
-        
-        x_data = np.array([request.x])
+
+        x_data = np.array(request.x)
+        x_eval = np.genfromtxt('/vol/X_eval.csv', delimiter=',')
+        y_eval = np.genfromtxt('/vol/Y_eval.csv', delimiter=',')
         if preprocessor:
             x_data = preprocessor.transform(x_data)
+            x_eval = preprocessor.transform(x_eval)
 
         model = joblib.load('/vol/model.joblib')
-        model.fit(x_data, np.array([request.y]))
+        model.fit(x_data, np.array(request.y))
 
         bucket.upload_file("models/", "model.joblib")
         os.remove("/vol/model.joblib")
@@ -53,8 +60,8 @@ def predict(request: BatchData):
         bucket.download_file("models/" + model_name + ".joblib", "/vol/model.joblib")
         model = joblib.load('/vol/model.joblib')
 
-        pred   = model.predict(request.x_test)
-        y_true = np.array([request.y_test])
+        pred   = model.predict(x_eval)
+        y_true = np.array([y_eval])
         
         metrics = {}
         if request.model_type != "Classification":

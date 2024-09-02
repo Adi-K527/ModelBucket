@@ -206,35 +206,62 @@ const tier2Deployment = async (id, secretAccessToken, project_id, model_data) =>
     });
 }
 
+const uploadFile = (bucket, folder, key, body) => {
+    return new Promise((resolve, reject) => {
+        const params = {
+            Bucket: bucket,
+            Key: `${folder}/${key}`,
+            Body: body
+        }
+
+        s3.upload(params, (err, data) => {
+            if (err) {
+                return res.status(400).json({"error": err})
+            }
+            resolve(data)
+        }) 
+    })
+}
+
+const validateUser = async (secretAccessToken, proj_name, model_name) => {
+    let user_id = ""
+    const response = await client.query(
+        "SELECT id FROM users WHERE secret_access_token = $1",
+        [secretAccessToken]
+    )
+    user_id = response.rows[0].id
+
+    const project_id = await client.query(
+        `SELECT project_id FROM users_project
+         INNER JOIN project ON users_project.project_id = project.id
+         WHERE project.projectname = $1 AND users_project.user_id = $2`,
+        [proj_name, user_id]
+    )
+
+    if (project_id.rows.length < 1) {
+        return {"success": false}
+    }
+
+    const model_data = await client.query(
+        "SELECT id, model_id, deploymenttype FROM model WHERE modelname = $1 AND project_id = $2",
+        [model_name, project_id.rows[0].project_id]
+    )
+
+    if (model_data.rows.length < 1) {
+        return {"success": false}
+    }
+
+    return {"success": true, "user_id": user_id, "model_data": model_data, "project_id": project_id}
+}
+
 const deployModel = async (req, res) => {
     try {
         let {secretAccessToken, proj_name, model_name} = req.body
         let {model, dependencies} = req.files
+        
+        const {success, user_id, model_data, project_id} = validateUser(secretAccessToken, proj_name, model_name)
 
-        let user_id = ""
-        const response = await client.query(
-            "SELECT id FROM users WHERE secret_access_token = $1",
-            [secretAccessToken]
-        )
-        user_id = response.rows[0].id
-
-        const project_id = await client.query(
-            `SELECT project_id FROM users_project
-             INNER JOIN project ON users_project.project_id = project.id
-             WHERE project.projectname = $1 AND users_project.user_id = $2`,
-            [proj_name, user_id]
-        )
-
-        if (project_id.rows.length < 1) {
-            return res.status(400).json({"Error": "Unable to find model or project"})
-        }
-
-        const model_data = await client.query(
-            "SELECT id, model_id, deploymenttype FROM model WHERE modelname = $1 AND project_id = $2",
-            [model_name, project_id.rows[0].project_id]
-        )
-
-        if (model_data.rows.length < 1) {
+        if (success == false) {
             return res.status(400).json({"Error": "Unable to find model or project"})
         }
 
@@ -252,23 +279,6 @@ const deployModel = async (req, res) => {
         })
 
         const id = model_data.rows[0].model_id
-
-        const uploadFile = (bucket, folder, key, body) => {
-            return new Promise((resolve, reject) => {
-                const params = {
-                    Bucket: bucket,
-                    Key: `${folder}/${key}`,
-                    Body: body
-                }
-
-                s3.upload(params, (err, data) => {
-                    if (err) {
-                        return res.status(400).json({"error": err})
-                    }
-                    resolve(data)
-                }) 
-            })
-        }
 
         await uploadFile("mb-bucket-5125", "models",       id + ".joblib", model[0].buffer)
         await uploadFile("mb-bucket-5125", "dependencies", id,             dependencies[0].buffer)
@@ -384,4 +394,47 @@ const deleteModel = async (req, res) => {
     }
 }
 
-export {getModels, createModel, updateModel, deployModel, terminateModel, deleteModel}
+const uploadPreprocessor = async (req, res) => {
+    try {
+        let {secretAccessToken, proj_name, model_name} = req.body
+        let {preprocessor} = req.files
+
+        const model_id = model_data.rows[0].model_id
+        const {success, user_id, model_data, project_id} = validateUser(secretAccessToken, proj_name, model_name)
+
+        if (success == false) {
+            return res.status(400).json({"Error": "Unable to find model or project"})
+        }
+
+        await uploadFile("mb-bucket-5125", "preprocessors", model_id + "-preprocessor", preprocessor[0].buffer)
+
+        return res.status(200).json({"message": "Uploaded preprocessor successfully."})
+    }
+    catch (error) {
+        res.status(400).json({"Error": error})
+    }    
+}   
+
+const uploadEvalData = async () => {
+    try {
+        let {secretAccessToken, proj_name, model_name} = req.body
+        let {X_eval, Y_eval} = req.files
+
+        const model_id = model_data.rows[0].model_id
+        const {success, user_id, model_data, project_id} = validateUser(secretAccessToken, proj_name, model_name)
+
+        if (success == false) {
+            return res.status(400).json({"Error": "Unable to find model or project"})
+        }
+
+        await uploadFile("mb-bucket-5125", "eval-data", model_id + "-x-eval", X_eval[0].buffer)
+        await uploadFile("mb-bucket-5125", "eval-data", model_id + "-y-eval", Y_eval[0].buffer)
+
+        return res.status(200).json({"message": "Uploaded preprocessor successfully."})
+    }
+    catch (error) {
+        res.status(400).json({"Error": error})
+    } 
+}
+
+export {getModels, createModel, updateModel, deployModel, terminateModel, deleteModel, uploadPreprocessor, uploadEvalData}

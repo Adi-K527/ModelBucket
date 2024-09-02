@@ -1,6 +1,7 @@
 node_modules/
 uploads/
 *.env
+*BAD_retrain.py
 requirements.txt
 test_model.joblib
 modelBucketPackage/modelbucket/__pycache__/

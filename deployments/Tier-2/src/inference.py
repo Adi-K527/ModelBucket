@@ -36,7 +36,7 @@ def predict(request: BatchData):
                 bucket.download_file("preprocessors/" + model_name + "-preprocessor", "/vol/preprocessor.joblib")
             preprocessor = joblib.load('/vol/preprocessor.joblib')
 
-        data = np.array([request.data])
+        data = np.array(request.data)
         if preprocessor:
             data = preprocessor.transform(data)
         

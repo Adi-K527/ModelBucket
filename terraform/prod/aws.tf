@@ -17,6 +17,11 @@ resource "aws_s3_object" "preprocessors_folder" {
     key = "preprocessors/"
 }
 
+resource "aws_s3_object" "preprocessors_folder" {
+    bucket = aws_s3_bucket.mb_bucket.id
+    key = "eval-data/"
+}
+
 resource "aws_ecr_repository" "mb_ecr_repo" {
   name = "model_bucket_ecr"
 }
