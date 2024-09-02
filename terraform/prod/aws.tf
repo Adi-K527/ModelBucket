@@ -17,7 +17,7 @@ resource "aws_s3_object" "preprocessors_folder" {
     key = "preprocessors/"
 }
 
-resource "aws_s3_object" "preprocessors_folder" {
+resource "aws_s3_object" "eval_data_folder" {
     bucket = aws_s3_bucket.mb_bucket.id
     key = "eval-data/"
 }
