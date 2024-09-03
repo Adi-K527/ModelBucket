@@ -13,8 +13,6 @@ app = FastAPI()
 class BatchData(BaseModel):
     x: Any
     y: Any
-    x_test: Any
-    y_test: Any
     model_type: str
     model_lib:  str
 

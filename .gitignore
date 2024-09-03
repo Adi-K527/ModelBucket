@@ -1,10 +1,12 @@
 node_modules/
 uploads/
 *.env
+*.csv
+*.joblib
 *BAD_retrain.py
 requirements.txt
 test_model.joblib
-modelBucketPackage/modelbucket/__pycache__/
+*__pycache__/
 terraform/lambda_deployment/.terraform
 terraform/prod/.terraform
 terraform/prod/.terraform.lock.hcl

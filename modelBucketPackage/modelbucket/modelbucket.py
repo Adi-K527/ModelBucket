@@ -33,10 +33,12 @@ class Client():
         }
 
         files = {
-            "x_eval": open(x_eval_path, "rb"),
-            "y_eval": open(y_eval_path, "rb")
+            "X_eval": open(x_eval_path, "rb"),
+            "Y_eval": open(y_eval_path, "rb")
         }
 
         response = requests.post(url=url, data=data, files=files)
+        print(response.text)
+        
         return response.text
 

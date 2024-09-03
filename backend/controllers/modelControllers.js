@@ -415,14 +415,16 @@ const uploadPreprocessor = async (req, res) => {
     }    
 }   
 
-const uploadEvalData = async () => {
+const uploadEvalData = async (req, res) => {
     try {
         let {secretAccessToken, proj_name, model_name} = req.body
         let {X_eval, Y_eval} = req.files
 
+        const {success, user_id, model_data, project_id} = await validateUser(secretAccessToken, proj_name, model_name)
+        console.log(success)
         const model_id = model_data.rows[0].model_id
-        const {success, user_id, model_data, project_id} = validateUser(secretAccessToken, proj_name, model_name)
 
+        
         if (success == false) {
             return res.status(400).json({"Error": "Unable to find model or project"})
         }
@@ -430,7 +432,7 @@ const uploadEvalData = async () => {
         await uploadFile("mb-bucket-5125", "eval-data", model_id + "-x-eval", X_eval[0].buffer)
         await uploadFile("mb-bucket-5125", "eval-data", model_id + "-y-eval", Y_eval[0].buffer)
 
-        return res.status(200).json({"message": "Uploaded preprocessor successfully."})
+        return res.status(200).json({"message": "Uploaded eval data successfully."})
     }
     catch (error) {
         res.status(400).json({"Error": error})
