@@ -5,6 +5,7 @@ import joblib
 from pydantic import BaseModel
 from typing import Any
 from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
 import numpy as np
 
 app = FastAPI()
@@ -13,9 +14,23 @@ class BatchData(BaseModel):
     data: Any
 
 
-@app.get("/predict")
+@app.get("/predict", response_class=HTMLResponse)
 def status():
-    return {"status": "inference ok"}
+    html_content = """
+    <html>
+        <head>
+            <title>Retrain Model Status</title>
+        </head>
+        <body>
+            <h1>Status: OK</h1>
+            <p>To inference using the model, send a POST request to <strong>/predict</strong> with the following parameters:</p>
+            <ul>
+                <li><strong>data</strong>: Specify the data you want to inference on in array form</li>
+            </ul>
+        </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
 
 
 @app.post("/predict")
