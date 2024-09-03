@@ -259,7 +259,7 @@ const deployModel = async (req, res) => {
         let {secretAccessToken, proj_name, model_name} = req.body
         let {model, dependencies} = req.files
         
-        const {success, user_id, model_data, project_id} = validateUser(secretAccessToken, proj_name, model_name)
+        const {success, user_id, model_data, project_id} = await validateUser(secretAccessToken, proj_name, model_name)
 
         if (success == false) {
             return res.status(400).json({"Error": "Unable to find model or project"})
@@ -400,7 +400,7 @@ const uploadPreprocessor = async (req, res) => {
         let {preprocessor} = req.files
 
         const model_id = model_data.rows[0].model_id
-        const {success, user_id, model_data, project_id} = validateUser(secretAccessToken, proj_name, model_name)
+        const {success, user_id, model_data, project_id} = await validateUser(secretAccessToken, proj_name, model_name)
 
         if (success == false) {
             return res.status(400).json({"Error": "Unable to find model or project"})
