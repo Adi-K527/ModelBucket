@@ -5,10 +5,10 @@ import joblib
 from pydantic import BaseModel
 from typing import Any
 import numpy as np
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.responses import HTMLResponse
 from sklearn.metrics import mean_squared_error, r2_score, precision_score, recall_score, accuracy_score, f1_score
-from prometheus_client import Gauge, generate_latest
+from prometheus_client import Gauge, generate_latest, CONTENT_TYPE_LATEST
 
 app = FastAPI()
 
@@ -126,4 +126,4 @@ def predict(request: BatchData):
 
 @app.get("/metrics")
 async def prometheus_metrics():
-    return generate_latest()
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
