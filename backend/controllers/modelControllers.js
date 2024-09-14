@@ -421,9 +421,7 @@ const uploadEvalData = async (req, res) => {
         let {X_eval, Y_eval} = req.files
 
         const {success, user_id, model_data, project_id} = await validateUser(secretAccessToken, proj_name, model_name)
-        console.log(success)
         const model_id = model_data.rows[0].model_id
-
         
         if (success == false) {
             return res.status(400).json({"Error": "Unable to find model or project"})

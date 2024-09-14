@@ -2,11 +2,15 @@ apiVersion: v1
 kind: Service
 metadata:
   name: retrain-service
+  labels: 
+    app: retrain-service
+    job: node-api
 spec:
   selector:
     app: retrain-app
   ports:
-    - protocol: TCP
+    - name: web
+      protocol: TCP
       port: 7000
       targetPort: 8000
   type: LoadBalancer

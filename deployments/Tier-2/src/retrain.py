@@ -8,12 +8,21 @@ import numpy as np
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from sklearn.metrics import mean_squared_error, r2_score, precision_score, recall_score, accuracy_score, f1_score
+from prometheus_client import Gauge, generate_latest
 
 app = FastAPI()
 
 class BatchData(BaseModel):
     model_type: str
     model_lib:  str
+
+mse_gauge       = Gauge('model_mse',       'Mean Squared Error')
+rmse_gauge      = Gauge('model_rmse',      'Root Mean Squared Error')
+r2_gauge        = Gauge('model_r2_score',  'R2 Score')
+accuracy_gauge  = Gauge('model_accuracy',  'Accuracy')
+precision_gauge = Gauge('model_precision', 'Precision')
+recall_gauge    = Gauge('model_recall',    'Recall')
+f1_gauge        = Gauge('model_f1_score',  'F1 Score')
 
 
 @app.get("/retrain", response_class=HTMLResponse)
@@ -87,12 +96,20 @@ def predict(request: BatchData):
             metrics["mse"]      = mean_squared_error(pred, y_true)
             metrics["rmse"]     = np.sqrt(mean_squared_error(pred, y_true))
             metrics["r2_score"] = r2_score(pred, y_true)
+            
+            mse_gauge.set(metrics["mse"])
+            rmse_gauge.set(metrics["rmse"])
+            r2_gauge.set(metrics["r2_score"])
         else:
             metrics["accuracy"]  = accuracy_score(pred, y_true)
             metrics["precision"] = precision_score(pred, y_true)
             metrics["recall"]    = recall_score(pred, y_true)
             metrics["f1_score"]  = f1_score(pred, y_true)
         
+            accuracy_gauge.set(metrics["accuracy"])
+            precision_gauge.set(metrics["precision"])
+            recall_gauge.set(metrics["recall"])
+            f1_gauge.set(metrics["f1_score"])
 
     except Exception as e:
         return {
@@ -105,3 +122,8 @@ def predict(request: BatchData):
         'statusCode': 200,
         'body': json.dumps({"Metrics": metrics})
     }
+
+
+@app.get("/metrics")
+async def prometheus_metrics():
+    return generate_latest()

@@ -110,16 +110,6 @@ jobs:
                 FILENAME: ${{ env.FILENAME }}
 
 
-            # - uses: TimDaub/hetzner-cloud-deploy-server-action@v2
-            #   if: ${{ env.SERVER == false }}
-            #   with:
-            #     server-name: ${{ env.FILENAME }}
-            #     server-image: "ubuntu-20.04"
-            #     server-type: "cx22"
-            #     ssh-key-name: "hetzner_key"
-            #     hcloud-token: ${{ secrets.HETZNER_TOKEN }}
-            #     delete-server: false
-
             - name: Delete existing image
               id: delete-image-if-present
               run: |
