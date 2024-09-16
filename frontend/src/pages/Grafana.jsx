@@ -2,28 +2,28 @@ import React from 'react';
 
 const Grafana = () => {
   // Use the view-only URL or kiosk mode for embedding
-  const grafanaUrl = "http://localhost:3000/public-dashboards/97b93325ca884113bb822f548f1a779b";
+  const grafanaUrl = "http://116.203.226.4:3000/public-dashboards/40f332fc82d240298d2c3618eb761ab0";
 
   return (
     <div style={{
-      width: '90vw',      // Adjust width to be 90% of viewport width
-      height: '90vh',     // Adjust height to be 90% of viewport height
-      margin: '5vh auto', // Center the container and add vertical margin
-      padding: 0,         // Remove padding if needed
-      overflow: 'hidden', // Hide overflow to avoid scrollbars
-      display: 'flex',    // Center the iframe within the container
-      alignItems: 'center',
-      justifyContent: 'center'
+      width: '100vw',      // Full viewport width
+      height: '100vh',     // Full viewport height
+      display: 'flex',     // Flexbox for centering
+      alignItems: 'center',  // Vertically center the iframe
+      justifyContent: 'center',  // Horizontally center the iframe
+      margin: 0,           // Remove margins
+      padding: 0,          // Remove padding
+      overflow: 'hidden'   // Hide overflow to avoid scrollbars
     }}>
       <iframe
         src={grafanaUrl}
+        target="_parent"
         style={{
-          width: '100%',     // Make iframe full width of the container
-          height: '100%',    // Make iframe full height of the container
+          width:  '100%',     // Full width of the container
+          height: '100%',    // Full height of the container
           border: 'none'     // Remove iframe border
         }}
         title="Grafana Dashboard"
-        // Optional: Add sandbox attribute to further restrict iframe functionality
         sandbox="allow-scripts allow-same-origin"
       ></iframe>
     </div>
