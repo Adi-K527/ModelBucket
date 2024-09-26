@@ -66,7 +66,7 @@ jobs:
               with:
                 ssh-private-key: ${{ env.HETZNER_SSH_KEY }}
             - run: |
-                ssh -o -t StrictHostKeyChecking=no root@${{ env.SERVER_IPV4 }} << "EOF" > temp.txt
+                ssh -t -o StrictHostKeyChecking=no root@${{ env.SERVER_IPV4 }} << "EOF" > temp.txt
                     echo "some thing"
 
                 cat temp.txt
