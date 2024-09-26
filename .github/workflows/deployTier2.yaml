@@ -275,7 +275,9 @@ jobs:
                     kubectl create -f retraining-deployment.yaml
                   fi
 
-                  echo $G_URL)
+                  echo $G_URL
+
+                EOF)
                 
                 echo ::add-mask::$G_URL 
                 echo G_URL ="$G_URL " >> $GITHUB_ENV
