@@ -152,7 +152,7 @@ jobs:
               with:
                 ssh-private-key: ${{ env.HETZNER_SSH_KEY }}
             - run: |
-                ssh -o StrictHostKeyChecking=no root@${{ env.SERVER_IPV4 }} << 'EOF'
+                G_URL=$(ssh -o StrictHostKeyChecking=no root@${{ env.SERVER_IPV4 }} << 'EOF'
                   imageurl='${{env.ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:${{env.FILENAME}}-inference'
                   sed "s|\${IMAGE_URL}|$imageurl|g" deployments/Tier-2/kubernetes-config/inference-deployment.yaml > inference-deployment.yaml
 
@@ -203,6 +203,47 @@ jobs:
                     kubectl apply -f deployments/Tier-2/kubernetes-config/ingress.yaml
                     sleep 10
                     kubectl apply -f deployments/Tier-2/kubernetes-config/ingress.yaml
+
+                    snap install helm --classic
+                    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+                    helm repo update
+                    helm install prometheus prometheus-community/kube-prometheus-stack
+                    sleep 3
+                    kubectl port-forward --address 0.0.0.0 service/prometheus-kube-prometheus-prometheus 9090 > /dev/null 2>&1 &
+
+                    docker run -d -p 3000:3000 \
+                      --name grafana-abcd \
+                      -e GF_SECURITY_ADMIN_PASSWORD=admin \
+                      -e GF_SECURITY_DISABLE_INITIAL_ADMIN_PASSWORD_CHANGE=true \
+                      -e GF_SECURITY_ALLOW_EMBEDDING=true \
+                      -e GF_SECURITY_COOKIE_SAMESITE=disabled \
+                      -e GF_AUTH_ANONYMOUS_ENABLED=true \
+                      -e GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer \
+                      -e GF_AUTH_ANONYMOUS_ORG_NAME="Main Org." \
+                      grafana/grafana-oss
+                    
+                    GRAFANA_URL="http://localhost:3000"
+                    GRAFANA_USER="admin"
+                    GRAFANA_PASSWORD="admin"
+
+                    API_KEY=$(curl -s -u "$GRAFANA_USER:$GRAFANA_PASSWORD" -X POST "$GRAFANA_URL/api/auth/keys" \
+                        -H "Content-Type: application/json" \
+                        -d '{"name": "api_key_5", "role": "Admin"}' | jq -r '.key')
+
+                    echo "API Key: $API_KEY"
+
+                    curl -H "Authorization: Bearer $API_KEY" \
+                        -H "Content-Type: application/json" \
+                        -X POST http://localhost:3000/api/datasources \
+                        -d '{"name":"prometheus", "type":"prometheus", "url":"http://${{ env.SERVER_IPV4 }}:9090", "access":"proxy", "basicAuth":false}'
+
+                    G_URL=$(curl -H "Authorization: Bearer $API_KEY" \
+                        -H "Content-Type: application/json" \
+                        -X POST http://localhost:3000/api/dashboards/db \
+                        -d @/deployments/Tier-2/dashboard-config.json | jq -r '.url')
+
+                    chmod 777 deployments/Tier-2/keep-prom-alive.sh
+                    ./keep-prom-alive.sh > /dev/null 2>&1 &
                   else
                     export AWS_ACCESS_KEY_ID="${{ env.AWS_ACCESS_KEY_ID }}"
                     export AWS_SECRET_ACCESS_KEY="${{ env.AWS_SECRET_ACCESS_KEY }}"
@@ -234,6 +275,11 @@ jobs:
                     kubectl create -f retraining-deployment.yaml
                   fi
 
+                  echo $G_URL)
+                
+                echo ::add-mask::$G_URL 
+                echo G_URL ="$G_URL " >> $GITHUB_ENV
+
             - name: Update Model State
               id: update-model
               env:
@@ -242,6 +288,7 @@ jobs:
                 PROJECT_ID:            ${{ env.PROJECT_ID }}
                 MODEL_ID:              ${{ env.MODEL_ID }}
                 BACKEND_URL:           ${{ env.BACKEND_URL }}
+                G_URL:                 ${{ env.G_URL }}
               run: |
                 set -e
                 curl -X PUT \
@@ -252,5 +299,6 @@ jobs:
                       "model_id":          "${{ env.MODEL_ID }}",
                       "state":             "ACTIVE",
                       "model_url":         "http://${{ env.SERVER_IPV4 }}/predict"
+                      "grafana_url":       "http://${{ env.SERVER_IPV4 }}:3000${{ env.G_URL }}?theme=light"
                   }' \
                   "${{ env.BACKEND_URL }}/api/model/update"

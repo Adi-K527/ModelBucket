@@ -1,27 +1,26 @@
 import React from 'react';
 
 const Grafana = () => {
-  // Use the view-only URL or kiosk mode for embedding
-  const grafanaUrl = "http://116.203.226.4:3000/public-dashboards/40f332fc82d240298d2c3618eb761ab0";
+  const grafanaUrl = "http://116.203.226.4:3000/d/bdyzo1dntbd34c/model-dashboard?theme=light";  
 
   return (
     <div style={{
-      width: '100vw',      // Full viewport width
-      height: '100vh',     // Full viewport height
-      display: 'flex',     // Flexbox for centering
-      alignItems: 'center',  // Vertically center the iframe
-      justifyContent: 'center',  // Horizontally center the iframe
-      margin: 0,           // Remove margins
-      padding: 0,          // Remove padding
-      overflow: 'hidden'   // Hide overflow to avoid scrollbars
+      width: '100vw',     
+      height: '100vh',     
+      display: 'flex',     
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      margin: 0,  
+      padding: 0,      
+      overflow: 'hidden'
     }}>
       <iframe
         src={grafanaUrl}
         target="_parent"
         style={{
-          width:  '100%',     // Full width of the container
-          height: '100%',    // Full height of the container
-          border: 'none'     // Remove iframe border
+          width:  '100%',  
+          height: '100%', 
+          frameBorder:"0"
         }}
         title="Grafana Dashboard"
         sandbox="allow-scripts allow-same-origin"
