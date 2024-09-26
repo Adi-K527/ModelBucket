@@ -152,7 +152,7 @@ jobs:
               with:
                 ssh-private-key: ${{ env.HETZNER_SSH_KEY }}
             - run: |
-                G_URL=$(ssh -o StrictHostKeyChecking=no root@${{ env.SERVER_IPV4 }} << "EOF"
+                ssh -o StrictHostKeyChecking=no root@${{ env.SERVER_IPV4 }} << "EOF"
                   imageurl='${{env.ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:${{env.FILENAME}}-inference'
                   sed "s|\${IMAGE_URL}|$imageurl|g" deployments/Tier-2/kubernetes-config/inference-deployment.yaml > inference-deployment.yaml
 
@@ -277,13 +277,24 @@ jobs:
                     kubectl create -f retraining-deployment.yaml
                   fi
 
-                  echo $G_URL
-                EOF
-                )
 
-                echo ::add-mask::$G_URL 
+            - name: Create secret environment variables from inputs 
+              run: |
+                GRAFANA_URL="http://${{ env.SERVER_IPV4 }}:3000"
+                GRAFANA_USER="admin"
+                GRAFANA_PASSWORD="admin"
+
+                API_KEY=$(curl -s -u "$GRAFANA_USER:$GRAFANA_PASSWORD" -X POST "$GRAFANA_URL/api/auth/keys" \
+                    -H "Content-Type: application/json" \
+                    -d '{"name": "api_key_123", "role": "Admin"}' | jq -r '.key')
+
+                G_URL=$(curl -G 'http://http://${{ env.SERVER_IPV4 }}:3000/api/search' \
+                     -H 'Authorization: Bearer $API_KEY' \
+                     -H 'Content-Type: application/json' | jq -r '.[0].url')
+
+                echo ::add-mask::$G_URL
                 echo G_URL="$G_URL" >> $GITHUB_ENV
-                
+
 
             - name: Update Model State
               id: update-model
