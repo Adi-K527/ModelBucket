@@ -152,7 +152,7 @@ jobs:
               with:
                 ssh-private-key: ${{ env.HETZNER_SSH_KEY }}
             - run: |
-                G_URL=$(ssh -o StrictHostKeyChecking=no root@${{ env.SERVER_IPV4 }} << 'EOF'
+                G_URL=$(ssh -o StrictHostKeyChecking=no root@${{ env.SERVER_IPV4 }} << "EOF"
                   imageurl='${{env.ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com/model_bucket_ecr:${{env.FILENAME}}-inference'
                   sed "s|\${IMAGE_URL}|$imageurl|g" deployments/Tier-2/kubernetes-config/inference-deployment.yaml > inference-deployment.yaml
 
@@ -182,13 +182,14 @@ jobs:
                     REGION=us-east-1
                     SECRET_NAME=${REGION}-ecr-registry
                     EMAIL=abc@xyz.com
-                    TOKEN=`aws ecr --region=$REGION get-authorization-token --output text --query authorizationData[].authorizationToken | base64 -d | cut -d: -f2`
+                    TOKEN=$(aws ecr --region=$REGION get-authorization-token --output text --query authorizationData[].authorizationToken | base64 -d | cut -d: -f2)
+                    
                     kubectl delete secret --ignore-not-found $SECRET_NAME
                     kubectl create secret docker-registry $SECRET_NAME \
-                    --docker-server=https://$ACCOUNT.dkr.ecr.${REGION}.amazonaws.com \
-                    --docker-username=AWS \
-                    --docker-password="${TOKEN}" \
-                    --docker-email="${EMAIL}"
+                      --docker-server=https://$ACCOUNT.dkr.ecr.${REGION}.amazonaws.com \
+                      --docker-username=AWS \
+                      --docker-password="${TOKEN}" \
+                      --docker-email="${EMAIL}"
                     
                     kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.8/config/manifests/metallb-native.yaml
                     kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.2.1/deploy/static/provider/cloud/deploy.yaml
@@ -259,13 +260,14 @@ jobs:
                     REGION=us-east-1
                     SECRET_NAME=${REGION}-ecr-registry
                     EMAIL=abc@xyz.com
-                    TOKEN=`aws ecr --region=$REGION get-authorization-token --output text --query authorizationData[].authorizationToken | base64 -d | cut -d: -f2`
+                    TOKEN=$(aws ecr --region=$REGION get-authorization-token --output text --query authorizationData[].authorizationToken | base64 -d | cut -d: -f2)
+                    
                     kubectl delete secret --ignore-not-found $SECRET_NAME
                     kubectl create secret docker-registry $SECRET_NAME \
-                    --docker-server=https://$ACCOUNT.dkr.ecr.${REGION}.amazonaws.com \
-                    --docker-username=AWS \
-                    --docker-password="${TOKEN}" \
-                    --docker-email="${EMAIL}"
+                      --docker-server=https://$ACCOUNT.dkr.ecr.${REGION}.amazonaws.com \
+                      --docker-username=AWS \
+                      --docker-password="${TOKEN}" \
+                      --docker-email="${EMAIL}"
 
                     [ -e /vol/model.joblib ] && rm /vol/model.joblib
                     [ -e /vol/preprocessor.joblib ] && rm /vol/preprocessor.joblib
@@ -276,11 +278,12 @@ jobs:
                   fi
 
                   echo $G_URL
+                EOF
+                )
 
-                EOF)
-                
                 echo ::add-mask::$G_URL 
                 echo G_URL ="$G_URL " >> $GITHUB_ENV
+
 
             - name: Update Model State
               id: update-model
