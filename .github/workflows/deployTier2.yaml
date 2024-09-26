@@ -145,7 +145,7 @@ jobs:
                 host: ${{ env.SERVER_IPV4 }}
                 key: ${{ env.HETZNER_SSH_KEY }}
                 username: root
-                source: "./deployments/Tier-2/kubernetes-config/"
+                source: "./deployments/Tier-2/"
                 target: "./"
 
             - uses: webfactory/ssh-agent@v0.4.1
@@ -167,6 +167,7 @@ jobs:
 
                     sudo apt install -y docker.io
                     snap install aws-cli --classic
+                    snap install jq
 
                     export AWS_ACCESS_KEY_ID="${{ env.AWS_ACCESS_KEY_ID }}"
                     export AWS_SECRET_ACCESS_KEY="${{ env.AWS_SECRET_ACCESS_KEY }}"
@@ -244,7 +245,7 @@ jobs:
                         -d @/deployments/Tier-2/dashboard-config.json | jq -r '.url')
 
                     chmod 777 deployments/Tier-2/keep-prom-alive.sh
-                    ./keep-prom-alive.sh > /dev/null 2>&1 &
+                    ./deployments/Tier-2/keep-prom-alive.sh > /dev/null 2>&1 &
                   else
                     export AWS_ACCESS_KEY_ID="${{ env.AWS_ACCESS_KEY_ID }}"
                     export AWS_SECRET_ACCESS_KEY="${{ env.AWS_SECRET_ACCESS_KEY }}"
@@ -278,7 +279,7 @@ jobs:
                   fi
 
 
-            - name: Create secret environment variables from inputs 
+            - name: Get grafana url 
               run: |
                 GRAFANA_URL="http://${{ env.SERVER_IPV4 }}:3000"
                 GRAFANA_USER="admin"
