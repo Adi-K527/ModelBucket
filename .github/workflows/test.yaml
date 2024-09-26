@@ -28,6 +28,40 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v4
 
+            - name: Install envsubst
+              run: sudo apt-get install -y gettext-base
+
+            - uses: hetznercloud/setup-hcloud@v1
+            - run: |
+                if hcloud server describe test > /dev/null 2>&1; then
+                  echo SERVER="true" >> $GITHUB_ENV
+                else
+                  echo SERVER="false" >> $GITHUB_ENV
+                fi
+              env:
+                HCLOUD_TOKEN: ${{ env.HETZNER_TOKEN }}
+
+
+            - uses: hetznercloud/setup-hcloud@v1
+            - run: |
+                if [ "$SERVER" = "false" ]; then
+                  hcloud server create --name test --image "ubuntu-20.04" --type "cx22" --ssh-key "hetzner_key"
+
+                  SERVER_IPV4=$(hcloud server describe test --output json | jq -r '.public_net.ipv4.ip')
+                  echo ::add-mask::$SERVER_IPV4
+                  echo SERVER_IPV4="$SERVER_IPV4" >> $GITHUB_ENV
+                  echo "Instance has been created."
+
+                else
+                  SERVER_IPV4=$(hcloud server describe test --output json | jq -r '.public_net.ipv4.ip')
+                  echo ::add-mask::$SERVER_IPV4
+                  echo SERVER_IPV4="$SERVER_IPV4" >> $GITHUB_ENV
+                fi
+              env:
+                HCLOUD_TOKEN: ${{ env.HETZNER_TOKEN }}
+                SERVER: ${{ env.SERVER }}
+                FILENAME: ${{ env.FILENAME }}
+
             - uses: webfactory/ssh-agent@v0.4.1
               with:
                 ssh-private-key: ${{ env.HETZNER_SSH_KEY }}
