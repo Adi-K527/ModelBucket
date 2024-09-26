@@ -282,8 +282,8 @@ jobs:
                 )
 
                 echo ::add-mask::$G_URL 
-                echo G_URL ="$G_URL " >> $GITHUB_ENV
-
+                echo G_URL="$G_URL" >> $GITHUB_ENV
+                
 
             - name: Update Model State
               id: update-model
