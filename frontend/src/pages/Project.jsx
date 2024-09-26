@@ -155,7 +155,19 @@ const Project = () => {
             <tbody>
               {models.map((model, index) => (
                 <tr key={index} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{model.modelname}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {model.deploymenttype === 'TIER 2' ? (
+                      <div>
+                        <a href={`/model-dashboard/${id}/${model.id}`} className="text-blue-500 hover:underline">
+                          {model.modelname}
+                        </a>
+                      </div>) : (
+                      <div>
+                        {model.modelname}
+                      </div>
+                    )}
+
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{model.deploymenttype}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(model.state)}`}>

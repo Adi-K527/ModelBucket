@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
 const Grafana = () => {
   const grafanaUrl = "http://116.203.226.4:3000/d/bdyzo1dntbd34c/model-dashboard?theme=light";  
