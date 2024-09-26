@@ -66,13 +66,7 @@ jobs:
               with:
                 ssh-private-key: ${{ env.HETZNER_SSH_KEY }}
             - run: |
-                ssh -o StrictHostKeyChecking=no root@${{ env.SERVER_IPV4 }} << "EOF"  > temp_output.txt
+                ssh -o StrictHostKeyChecking=no root@${{ env.SERVER_IPV4 }} << "EOF"
                     echo "some thing"
-                EOF
 
-                G_URL=$(<temp_output.txt)
-                echo "::add-mask::$G_URL"
-                echo "G_URL=$G_URL" >> $GITHUB_ENV
-
-                rm temp_output.txt
                                 
