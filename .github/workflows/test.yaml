@@ -51,6 +51,7 @@ jobs:
                   echo ::add-mask::$SERVER_IPV4
                   echo SERVER_IPV4="$SERVER_IPV4" >> $GITHUB_ENV
                   echo "Instance has been created."
+                  sleep 20
 
                 else
                   SERVER_IPV4=$(hcloud server describe test --output json | jq -r '.public_net.ipv4.ip')
@@ -60,7 +61,6 @@ jobs:
               env:
                 HCLOUD_TOKEN: ${{ env.HETZNER_TOKEN }}
                 SERVER: ${{ env.SERVER }}
-                FILENAME: ${{ env.FILENAME }}
 
             - uses: webfactory/ssh-agent@v0.4.1
               with:
