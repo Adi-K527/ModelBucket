@@ -224,15 +224,15 @@ jobs:
                       -e GF_AUTH_ANONYMOUS_ORG_NAME="Main Org." \
                       grafana/grafana-oss
                     
+                    sleep 5
+                    
                     GRAFANA_URL="http://localhost:3000"
                     GRAFANA_USER="admin"
                     GRAFANA_PASSWORD="admin"
 
                     API_KEY=$(curl -s -u "$GRAFANA_USER:$GRAFANA_PASSWORD" -X POST "$GRAFANA_URL/api/auth/keys" \
                         -H "Content-Type: application/json" \
-                        -d '{"name": "api_key_5", "role": "Admin"}' | jq -r '.key')
-
-                    echo "API Key: $API_KEY"
+                        -d '{"name": "api_key", "role": "Admin"}' | jq -r '.key')
 
                     curl -H "Authorization: Bearer $API_KEY" \
                         -H "Content-Type: application/json" \
@@ -242,7 +242,7 @@ jobs:
                     G_URL=$(curl -H "Authorization: Bearer $API_KEY" \
                         -H "Content-Type: application/json" \
                         -X POST http://localhost:3000/api/dashboards/db \
-                        -d @/deployments/Tier-2/dashboard-config.json | jq -r '.url')
+                        -d @deployments/Tier-2/dashboard-config.json | jq -r '.url')
 
                     chmod 777 deployments/Tier-2/keep-prom-alive.sh
                     ./deployments/Tier-2/keep-prom-alive.sh > /dev/null 2>&1 &
