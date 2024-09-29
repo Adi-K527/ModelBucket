@@ -322,6 +322,6 @@ jobs:
                       "model_id":          "${{ env.MODEL_ID }}",
                       "state":             "ACTIVE",
                       "model_url":         "http://${{ env.SERVER_IPV4 }}/predict",
-                      "grafana_url":       "http://${{ env.SERVER_IPV4 }}:3000${{ env.G_URL }}?theme=light"
+                      "dashboard_url":     "http://${{ env.SERVER_IPV4 }}:3000${{ env.G_URL }}?theme=light"
                   }' \
                   "${{ env.BACKEND_URL }}/api/model/update"
