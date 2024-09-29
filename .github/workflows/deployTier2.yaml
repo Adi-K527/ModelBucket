@@ -208,6 +208,9 @@ jobs:
 
                     export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
+                    kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/main/example/prometheus-operator-crd/monitoring.coreos.com_servicemonitors.yaml
+                    kubectl apply -f deployments/Tier-2/kubernetes-config/retrain-service-monitor.yaml
+
                     snap install helm --classic
                     helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
                     helm repo update
@@ -246,6 +249,8 @@ jobs:
                         -X POST http://localhost:3000/api/dashboards/db \
                         -d @deployments/Tier-2/dashboard-config.json | jq -r '.url')
 
+                    echo "$G_URL"
+
                     chmod 777 deployments/Tier-2/keep-prom-alive.sh
                     ./deployments/Tier-2/keep-prom-alive.sh > /dev/null 2>&1 &
                   else
@@ -283,6 +288,7 @@ jobs:
 
             - name: Get grafana url 
               run: |
+                set -e
                 GRAFANA_URL="http://${{ env.SERVER_IPV4 }}:3000"
                 GRAFANA_USER="admin"
                 GRAFANA_PASSWORD="admin"
