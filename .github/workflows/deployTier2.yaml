@@ -203,7 +203,7 @@ jobs:
                     kubectl create -f deployments/Tier-2/kubernetes-config/retraining-service.yaml
                     sleep 30
                     kubectl apply -f deployments/Tier-2/kubernetes-config/ingress.yaml
-                    sleep 10
+                    sleep 20
                     kubectl apply -f deployments/Tier-2/kubernetes-config/ingress.yaml
 
                     export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
@@ -229,7 +229,7 @@ jobs:
                       -e GF_AUTH_ANONYMOUS_ORG_NAME="Main Org." \
                       grafana/grafana-oss
                     
-                    sleep 5
+                    sleep 25
                     
                     GRAFANA_URL="http://${{ env.SERVER_IPV4 }}:3000"
                     GRAFANA_USER="admin"
