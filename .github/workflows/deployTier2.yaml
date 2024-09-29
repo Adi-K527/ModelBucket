@@ -249,8 +249,6 @@ jobs:
                         -X POST $GRAFANA_URL/api/dashboards/db \
                         -d @deployments/Tier-2/dashboard-config.json | jq -r '.url')
 
-                    echo "$G_URL"
-
                     chmod 777 deployments/Tier-2/keep-prom-alive.sh
                     ./deployments/Tier-2/keep-prom-alive.sh > /dev/null 2>&1 &
                   else
@@ -301,7 +299,7 @@ jobs:
                      -H 'Authorization: Bearer $API_KEY' \
                      -H 'Content-Type: application/json' | jq -r '.[0].url')
 
-                echo "$G_URL"
+                echo ::add-mask::$G_URL
                 echo G_URL="$G_URL" >> $GITHUB_ENV
 
 
@@ -323,7 +321,7 @@ jobs:
                       "project_id":        "${{ env.PROJECT_ID }}",
                       "model_id":          "${{ env.MODEL_ID }}",
                       "state":             "ACTIVE",
-                      "model_url":         "http://${{ env.SERVER_IPV4 }}/predict"
+                      "model_url":         "http://${{ env.SERVER_IPV4 }}/predict",
                       "grafana_url":       "http://${{ env.SERVER_IPV4 }}:3000${{ env.G_URL }}?theme=light"
                   }' \
                   "${{ env.BACKEND_URL }}/api/model/update"
