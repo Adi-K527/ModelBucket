@@ -231,7 +231,7 @@ jobs:
                     
                     sleep 5
                     
-                    GRAFANA_URL="http://localhost:3000"
+                    GRAFANA_URL="http://${{ env.SERVER_IPV4 }}:3000"
                     GRAFANA_USER="admin"
                     GRAFANA_PASSWORD="admin"
 
@@ -241,12 +241,12 @@ jobs:
 
                     curl -H "Authorization: Bearer $API_KEY" \
                         -H "Content-Type: application/json" \
-                        -X POST http://localhost:3000/api/datasources \
+                        -X POST $GRAFANA_URL/api/datasources \
                         -d '{"name":"prometheus", "type":"prometheus", "url":"http://${{ env.SERVER_IPV4 }}:9090", "access":"proxy", "basicAuth":false}'
 
                     G_URL=$(curl -H "Authorization: Bearer $API_KEY" \
                         -H "Content-Type: application/json" \
-                        -X POST http://localhost:3000/api/dashboards/db \
+                        -X POST $GRAFANA_URL/api/dashboards/db \
                         -d @deployments/Tier-2/dashboard-config.json | jq -r '.url')
 
                     echo "$G_URL"
@@ -297,7 +297,7 @@ jobs:
                     -H "Content-Type: application/json" \
                     -d '{"name": "api_key_123", "role": "Admin"}' | jq -r '.key')
 
-                G_URL=$(curl -G 'http://http://${{ env.SERVER_IPV4 }}:3000/api/search' \
+                G_URL=$(curl -G 'http://${{ env.SERVER_IPV4 }}:3000/api/search' \
                      -H 'Authorization: Bearer $API_KEY' \
                      -H 'Content-Type: application/json' | jq -r '.[0].url')
 
