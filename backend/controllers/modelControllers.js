@@ -121,7 +121,7 @@ const updateModel = async (req, res) => {
 
                 const params = []
                 for (i = 0; i < attributes.length; i++) {
-                    if (["modelname", "deploymenttype", "model_url", "state"].includes(attributes[i])){    
+                    if (["modelname", "deploymenttype", "model_url", "state", "dashboard_url"].includes(attributes[i])){    
                         queryString += " " + attributes[i] + " = $" + (pos) + ","
                         params.push(values[i])
                         pos += 1
