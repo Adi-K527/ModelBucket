@@ -4,6 +4,37 @@ import fetch from "node-fetch";
 import { randomUUID } from "crypto";
 
 
+
+const getModel = async (req, res) => {
+    try {
+        const token = req.headers.authorization.split(' ')[1]
+        const {id, username, email} = jwt.decode(token, process.env.JWT_SECRET)
+        const {project_id, model_id} = req.params 
+
+        const response = await client.query(
+            `SELECT  model_id, dashboard_url
+             FROM    users, users_project, model
+             WHERE   users.id = users_project.user_id
+             AND     users_project.project_id = model.project_id
+             AND     users_project.project_id = $1
+             AND     users.id = $2
+             AND     model.id = $3`,
+            [project_id, id, model_id]
+        )
+        
+        if (response.rows.length > 0) {
+            res.status(200).json({"data": response.rows})
+        }
+        else {
+            res.status(400).json({"error": "model not found"})
+        }
+    }
+    catch (error) { 
+        console.error(error)
+        res.status(400).json({"error": error})
+    }
+}
+
 const getModels = async (req, res) => {
     try {
         const token = req.headers.authorization.split(' ')[1]
@@ -437,4 +468,4 @@ const uploadEvalData = async (req, res) => {
     } 
 }
 
-export {getModels, createModel, updateModel, deployModel, terminateModel, deleteModel, uploadPreprocessor, uploadEvalData}
+export {getModels, createModel, updateModel, deployModel, terminateModel, deleteModel, uploadPreprocessor, uploadEvalData, getModel}
