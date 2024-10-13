@@ -20,7 +20,7 @@ const Grafana = () => {
           navigate('/login');
           return;
         }
-  
+        
         const res = await fetch(import.meta.env.VITE_BACKEND_URI + "/api/user/profile", {
           method: "GET",
           credentials: "include",

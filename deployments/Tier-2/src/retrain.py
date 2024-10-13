@@ -81,7 +81,8 @@ def predict(request: BatchData):
 
         model = joblib.load('/vol/model.joblib')
         model.fit(x_train, np.array(y_train))
-
+        joblib.dump(model, "/vol/model.joblib")
+        
         bucket.upload_file("/vol/model.joblib", "models/" + model_name +".joblib")
         os.remove("/vol/model.joblib")
 
