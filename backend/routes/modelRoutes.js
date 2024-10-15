@@ -1,5 +1,5 @@
 import express from "express"
-import { getModels, createModel, updateModel, deployModel, terminateModel, deleteModel, uploadPreprocessor, uploadEvalData, getModel } from "../controllers/modelControllers.js"
+import { getModels, createModel, updateModel, deployModel, terminateModel, deleteModel, uploadPreprocessor, uploadEvalData, uploadTrainData, getModel } from "../controllers/modelControllers.js"
 import { secure } from "../middleware/auth.js"
 import multer from "multer"
 
@@ -15,6 +15,7 @@ router.delete("/delete",    secure,   deleteModel)
 
 router.post("/deploy",       upload.fields([{ name: 'model' }, { name: 'dependencies' }]), secure,   deployModel)
 router.post("/preprocessor", upload.fields([{ name: 'preprocessor' }]),                    secure,   uploadPreprocessor)
+router.post("/train",        upload.fields([{ name: 'X_train' }, { name: 'Y_train' }]),    secure,   uploadTrainData)
 router.post("/eval",         upload.fields([{ name: 'X_eval' }, { name: 'Y_eval' }]),      secure,   uploadEvalData)
 
 export default router

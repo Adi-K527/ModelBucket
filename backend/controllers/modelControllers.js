@@ -430,8 +430,8 @@ const uploadPreprocessor = async (req, res) => {
         let {secretAccessToken, proj_name, model_name} = req.body
         let {preprocessor} = req.files
 
-        const model_id = model_data.rows[0].model_id
         const {success, user_id, model_data, project_id} = await validateUser(secretAccessToken, proj_name, model_name)
+        const model_id = model_data.rows[0].model_id
 
         if (success == false) {
             return res.status(400).json({"Error": "Unable to find model or project"})
@@ -442,9 +442,32 @@ const uploadPreprocessor = async (req, res) => {
         return res.status(200).json({"message": "Uploaded preprocessor successfully."})
     }
     catch (error) {
+
         res.status(400).json({"Error": error})
     }    
 }   
+
+const uploadTrainData = async (req, res) => {
+    try {
+        let {secretAccessToken, proj_name, model_name} = req.body
+        let {X_train, Y_train} = req.files
+
+        const {success, user_id, model_data, project_id} = await validateUser(secretAccessToken, proj_name, model_name)
+        const model_id = model_data.rows[0].model_id
+        
+        if (success == false) {
+            return res.status(400).json({"Error": "Unable to find model or project"})
+        }
+
+        await uploadFile("mb-bucket-5125", "train-data", model_id + "-x-train", X_train[0].buffer)
+        await uploadFile("mb-bucket-5125", "train-data", model_id + "-y-train", Y_train[0].buffer)
+
+        return res.status(200).json({"message": "Uploaded train data successfully."})
+    }
+    catch (error) {
+        res.status(400).json({"Error": error})
+    } 
+}
 
 const uploadEvalData = async (req, res) => {
     try {
@@ -468,4 +491,4 @@ const uploadEvalData = async (req, res) => {
     } 
 }
 
-export {getModels, createModel, updateModel, deployModel, terminateModel, deleteModel, uploadPreprocessor, uploadEvalData, getModel}
+export {getModels, createModel, updateModel, deployModel, terminateModel, deleteModel, uploadPreprocessor, uploadTrainData, uploadEvalData, getModel}

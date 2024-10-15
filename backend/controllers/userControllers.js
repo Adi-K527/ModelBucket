@@ -150,4 +150,35 @@ const updateProfile = async (req, res) => {
     }
 }
 
-export { login, register, createKey, getProfile, updateProfile }
+const getInfo = async (req, res) => {
+    try {
+        let {secretAccessToken} = req.body
+
+        const proj_response = await client.query(
+            `SELECT project_id, projectname
+             FROM    users, users_project, project
+             WHERE   users.id         = users_project.user_id
+             AND     project.id       = users_project.project_id
+             AND     users.secret_access_token = $1`, 
+            [secretAccessToken]
+        )
+    
+        const model_response = await client.query(
+            `SELECT  model.id, model.project_id, modelname, state
+             FROM    users, users_project, project, model
+             WHERE   users.id         = users_project.user_id
+             AND     project.id       = users_project.project_id
+             AND     model.project_id = project.id
+             AND     users.secret_access_token = $1`, 
+            [secretAccessToken]
+        )
+
+        return res.status(200).json({"project_data": proj_response.rows, "model_data": model_response.rows})
+    }
+    catch (error) {
+        console.error(error)
+        res.status(400).json({"error": error})   
+    }
+}
+
+export { login, register, createKey, getProfile, updateProfile, getInfo }

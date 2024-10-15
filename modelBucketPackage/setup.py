@@ -3,7 +3,7 @@ import codecs
 import os
 
 
-VERSION = '0.0.11'
+VERSION = '1.0.0'
 DESCRIPTION = 'ModelBucket deployment package'
 LONG_DESCRIPTION = 'A package that allows you to deploy models using ModelBucket.'
 
@@ -17,7 +17,7 @@ setup(
     long_description_content_type="text/markdown",
     long_description=LONG_DESCRIPTION,
     packages=find_packages(),
-    install_requires=['requests'],
+    install_requires=['requests', 'json'],
     keywords=['python', 'ML', 'Deployment'],
     classifiers=[
         "Development Status :: 1 - Planning",
