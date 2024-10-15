@@ -94,7 +94,6 @@ const Grafana = () => {
           frameBorder:"0"
         }}
         title="Grafana Dashboard"
-        sandbox="allow-scripts allow-same-origin"
       ></iframe>
     </div>
   );

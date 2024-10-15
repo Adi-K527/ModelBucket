@@ -69,5 +69,5 @@ def predict(request: BatchData):
 
     return {
         'statusCode': 200,
-        'body': json.dumps({"prediction": list(prediction), "newthing": "im new", "thing": list(thing)})
+        'body': json.dumps({"prediction": list(prediction)})
     }
