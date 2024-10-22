@@ -7,19 +7,19 @@ ModelBucket is a solution for deploying machine learning models, designed to sim
 ---
 </br>
 
-**Tier 1** deployments setup a Fast API server to be able to run inferences using your model.
+**Tier 1** deployments setup a containerized Fast API application on AWS Lambda to be able to run inferences using your model.
 
 ![tier1-diagram](https://github.com/user-attachments/assets/3fedaa89-ef8e-407e-a80e-8a772efbafd9)
 
 </br>
 
-**Tier 2** deployments provision a server with separate FastAPI servers for inference and retraining. Prometheus and Grafana are also set up to power a dashboard that tracks the model's performance over time.
+**Tier 2** deployments provisions a server with a kubernetes cluster with containerized FastAPI applications for inference and retraining. Prometheus and Grafana are also set up to power a dashboard that tracks the model's performance over time.
 
 ![tier2-diagram](https://github.com/user-attachments/assets/db5283f0-2525-4112-98b7-f6b4b7c4038e)
 
 </br>
 
-Below is the kubernetes cluster that is set up on the server:
+The kubernetes cluster routes traffic to the retraining or inference service depending on whether a request was made to /predict or /retrain. There are 4 inference pods and 2 retraining pods due to inferencing being a more common action and to be able to handle the load to the inference application. Models and preprocessors are pulled from AWS S3 into a volume.
 
 ![k8scluster-diagram](https://github.com/user-attachments/assets/5aff1444-a6aa-4762-a52f-73aa119272fc)
 
