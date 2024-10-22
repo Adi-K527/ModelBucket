@@ -209,64 +209,57 @@ const Project = () => {
             Create New Model
           </button>
           {createModel && (
-            <form onSubmit={handleModelSubmit} className="mt-6 bg-gray-100 p-6 rounded-lg shadow-sm">
-              <div className="mb-4">
-                <label className="block text-gray-700 font-medium">Model Name</label>
+            <form onSubmit={handleModelSubmit} className="mt-6 bg-white p-6 rounded-lg shadow-lg">
+              <div className="mb-6">
+                <label className="block text-gray-700 font-semibold mb-2">Model Name</label>
                 <input
                   type="text"
                   placeholder="Enter model name"
                   value={modelName}
                   onChange={(e) => setModelName(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
                   required
                 />
               </div>
-              <div className="mb-4">
-                <span className="block text-gray-700 font-medium mb-2">Model Tier</span>
-                <div className="space-y-2">
-                  <label className="inline-flex items-center">
-                    <input
-                      type="radio"
-                      name="tier"
-                      value="TIER 1"
-                      checked={modelTier === "TIER 1"}
-                      onChange={(e) => setModelTier(e.target.value)}
-                      className="form-radio text-blue-500"
-                    />
-                    <span className="ml-2 text-gray-700">TIER 1</span>
-                  </label>
-                  <label className="inline-flex items-center">
-                    <input
-                      type="radio"
-                      name="tier"
-                      value="TIER 2"
-                      checked={modelTier === "TIER 2"}
-                      onChange={(e) => setModelTier(e.target.value)}
-                      className="form-radio text-blue-500"
-                    />
-                    <span className="ml-2 text-gray-700">TIER 2 (DEVELOPMENT)</span>
-                  </label>
+
+              <div className="mb-6">
+                <span className="block text-gray-700 font-semibold mb-2">Model Tier</span>
+                <div className="flex space-x-4">
+                  <button
+                    type="button"
+                    onClick={() => setModelTier("TIER 1")}
+                    className={`flex-1 p-4 rounded-lg border-2 transition duration-200 ${
+                      modelTier === "TIER 1"
+                        ? "bg-blue-500 text-white border-blue-600"
+                        : "bg-white text-gray-700 border-gray-300 hover:bg-blue-50"
+                    }`}
+                  >
+                    TIER 1
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setModelTier("TIER 2")}
+                    className={`flex-1 p-4 rounded-lg border-2 transition duration-200 ${
+                      modelTier === "TIER 2"
+                        ? "bg-blue-500 text-white border-blue-600"
+                        : "bg-white text-gray-700 border-gray-300 hover:bg-blue-50"
+                    }`}
+                  >
+                    TIER 2
+                  </button>
                 </div>
               </div>
-              <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
+
+              <button
+                type="submit"
+                className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition duration-200 shadow-md hover:shadow-lg"
+              >
                 Submit
               </button>
             </form>
+
           )}
         </div>
-      </section>
-
-      <section>
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Members</h2>
-        <ul className="space-y-2">
-          {members
-            .filter(member => member.status === 'OWNER' || member.status === 'MEMBER')
-            .map((member) => (
-              <li key={member.name} className="p-4 border rounded-md bg-gray-100">
-                <p>{member.name} | {member.status}</p>
-              </li>
-            ))}
-        </ul>
       </section>
     </div>
   );

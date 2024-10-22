@@ -39,7 +39,6 @@ class Client():
         }
 
         response = requests.post(url=url, data=data, files=files)
-        print(response.text)
         
         return response.text
     
@@ -59,7 +58,6 @@ class Client():
         }
 
         response = requests.post(url=url, data=data, files=files)
-        print(response.text)
         
         return response.text
     
@@ -79,7 +77,6 @@ class Client():
         }
 
         response = requests.post(url=url, data=data, files=files)
-        print(response.text)
         
         return response.text
     
@@ -92,6 +89,7 @@ class Client():
         }
 
         response = requests.get(url=url, data=data)
+        print(response.text)
         response_data = response.json()
         
         project_data = response_data.get("project_data", [])
