@@ -7,15 +7,13 @@ ModelBucket is a solution for deploying machine learning models, designed to sim
 ---
 </br>
 
-**Tier 1**
-Tier 1 deployments setup a Fast API server to be able to run inferences using your model.
+**Tier 1** deployments setup a Fast API server to be able to run inferences using your model.
 
 ![tier1-diagram](https://github.com/user-attachments/assets/3fedaa89-ef8e-407e-a80e-8a772efbafd9)
 
 </br>
 
-**Tier 2**
-Tier 2 deployments provision a server with separate FastAPI servers for inference and retraining. Prometheus and Grafana are also set up to power a dashboard that tracks the model's performance over time.
+**Tier 2** deployments provision a server with separate FastAPI servers for inference and retraining. Prometheus and Grafana are also set up to power a dashboard that tracks the model's performance over time.
 
 ![tier2-diagram](https://github.com/user-attachments/assets/db5283f0-2525-4112-98b7-f6b4b7c4038e)
 
