@@ -1,9 +1,5 @@
 # ModelBucket
 
-</br></br>
-
-## About
----
 ModelBucket is a solution for deploying machine learning models, designed to simplify the process of managing both inference and retraining. It provides deployment options and makes it easy to send requests for predictions or retraining.
 
 </br></br>
